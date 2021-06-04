@@ -1,22 +1,40 @@
-import { atoms, vertices } from "misc"
-import { MutableRefObject, useContext, useRef } from "react"
-import { DoubleSide } from 'three'
+import { atoms } from "misc"
+import { MutableRefObject, useEffect, useRef, useState } from "react"
+import { DoubleSide, Camera, Event, BufferGeometry } from 'three'
 import { useRecoilState } from 'recoil'
-import { BufferGeometry } from "three"
+import { OrbitControls, TransformControls as TransformControlsImpl } from "three-stdlib"
+import { TransformControls } from "@react-three/drei"
 
-export const Model = ({modelRef}:{modelRef:MutableRefObject<BufferGeometry|undefined>}) => {
-    const [ model, setModel ] = useRecoilState(atoms.model)
+type ModelProps = {
+  orbit:MutableRefObject<OrbitControls|null>,
+  modelRef:MutableRefObject<BufferGeometry|undefined>
+}
 
-    if ((!model) || (!modelRef.current)) {
-        return null
+export const Model = ({orbit, modelRef}:ModelProps) => {
+  const [ model, setModel ] = useRecoilState(atoms.model)
+  const transform = useRef<TransformControlsImpl<Camera>>(null)
+  const [ mode, setMode ] = useRecoilState(atoms.transformMode)
+
+  useEffect(() => {
+    if (transform.current) {
+      const controls = transform.current
+      controls.setMode(mode)
+      const callback = (event:Event) => {console.log('dragged');((orbit.current as OrbitControls).enabled = !event.value)}
+      controls.addEventListener("dragging-changed", callback)
+      return () => controls.removeEventListener("dragging-changed", callback)
     }
+  })
 
-    return <>
+  if ((!model) || (!modelRef.current)) {
+    return null
+  }
+    
+  return <>
+  {/*//@ts-ignore  */}
+    <TransformControls ref={transform} size={0.6}>
       <mesh geometry={modelRef.current} position={[0, 1.5, 0]} rotation={[0, 0, 0]} scale={[0.1, 0.1, 0.1]}>
         <meshLambertMaterial attach="material" color="#999" side={DoubleSide} />
-        {/* <points geometry={modelRef.current}>
-            <pointsMaterial size={0.005} color="grey" depthTest={false} />
-        </points> */}
       </mesh>
-    </>
+    </TransformControls>
+  </>
 }

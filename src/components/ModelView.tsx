@@ -9,10 +9,11 @@ import Viewcube from './Viewcube'
 
 export const ModelView = ({modelRef}:{modelRef:MutableRefObject<BufferGeometry|undefined>}) => {
   const RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE()
-  const controls = useRef<OrbitControlsType>(null)
+  const orbit = useRef<OrbitControlsType>(null)
   
   return <div style={{position:'absolute', height:'100%', width:'100%'}}>
       <Canvas 
+        shadows
         dpr={window.devicePixelRatio*1}
         camera={{
           position:[3,4,3]
@@ -21,10 +22,10 @@ export const ModelView = ({modelRef}:{modelRef:MutableRefObject<BufferGeometry|u
         <RecoilBridge>
           <ambientLight />
           <pointLight position={[10, 10, 10]} />
-          <Model {...{modelRef}} />
+          <Model {...{orbit, modelRef}} />
           <gridHelper args={[10,20,'#bbb','#ccc']} />
-          <OrbitControls ref={controls} />
-          <Viewcube {...{controls}}/>
+          <OrbitControls ref={orbit} />
+          <Viewcube {...{orbit}}/>
         </RecoilBridge>
       </Canvas>
   </div>

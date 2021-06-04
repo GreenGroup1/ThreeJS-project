@@ -1,10 +1,14 @@
 import { Scene, Matrix4, Camera, Mesh } from 'three'
 import { useRef, useMemo, useState, MutableRefObject, ReactElement } from 'react'
-import { Canvas, useFrame, useThree, createPortal } from '@react-three/fiber'
+import { useFrame, useThree, createPortal } from '@react-three/fiber'
 import { PerspectiveCamera, useCamera } from '@react-three/drei'
 import { OrbitControls } from 'three-stdlib'
 
-export default function Viewcube({controls}:{controls:MutableRefObject<OrbitControls|null>}) {
+type ViewcubeProps = {
+  orbit:MutableRefObject<OrbitControls|null>
+}
+
+export default function Viewcube({orbit}:ViewcubeProps) {
   const { gl, scene, camera, size } = useThree()
   const virtualScene = useMemo(() => new Scene(), [])
   const virtualCam = useRef<Camera>()
@@ -13,9 +17,9 @@ export default function Viewcube({controls}:{controls:MutableRefObject<OrbitCont
   const matrix = new Matrix4()
 
   useFrame(() => {
-    if(!ref.current || !controls.current){ return }
+    if(!ref.current || !orbit.current){ return }
     matrix.copy(camera.matrix).invert()
-    let dir = camera.position.clone().sub(controls.current.target)
+    let dir = camera.position.clone().sub(orbit.current.target)
 		ref.current.position.copy(dir.normalize().multiplyScalar(1.75))
     ref.current.quaternion.setFromRotationMatrix(matrix)
     gl.autoClear = true
