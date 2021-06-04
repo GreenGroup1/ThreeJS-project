@@ -46,7 +46,7 @@ const roundedCorners = ({ roundedTopRight, roundedTopLeft, roundedBottomRight, r
 })
 
 export const Button = (props: IButtonProps) => (
-    <div onClick={props.onClick} style={{ ...borders(props), ...roundedCorners(props), display: props.inline ? 'inline-block' : '', height: '64px', width: '72px', backgroundColor: '#464554', alignItems: 'center', justifyContent: 'center', alignContent: 'center' }}>
+    <div onClick={props.onClick} style={{ ...borders(props), ...roundedCorners(props), display: props.inline ? 'inline-block' : '', height: '64px', width: '72px', backgroundColor: '#464554', alignItems: 'center', justifyContent: 'center', alignContent: 'center', pointerEvents:'all' }}>
         <img style={{ width: '40%', marginLeft: '20px', height:'28px',  marginTop:'10px' }} src={`/icons/${props.type}.svg`} alt='button' />
         <div style={{ fontSize:'10px', fontWeight:'bold', textAlign: 'center', color: '#B5B5C3' }} >{capitalize(props.type)}</div>
     </div>

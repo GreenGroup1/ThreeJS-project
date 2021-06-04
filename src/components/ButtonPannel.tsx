@@ -1,19 +1,23 @@
 import fileDialog from 'file-dialog'
 import { Button, ButtonBorderType, ButtonType } from "./Button"
-import { store } from "../App"
-import { useState } from "@hookstate/core"
+import { atoms } from "misc"
 import { STLLoader } from "three-stdlib"
+import { MutableRefObject, useContext } from 'react'
+import { useRecoilState } from 'recoil'
+import { BufferGeometry } from 'three'
 
-export const ButtonPannel = () => {
-    const { observableModel } = useState(store)
-    return <div style={{position:'absolute'}}>
+export const ButtonPannel = ({modelRef}:{modelRef:MutableRefObject<BufferGeometry|undefined>}) => {
+    
+  const [ model, setModel ] = useRecoilState(atoms.model)
+    return <div style={{position:'absolute', pointerEvents:'none'}}>
         <Button inline onClick={async () => {
-            const test = await fileDialog()
-            const buffer = await test[0].arrayBuffer()
-            console.log(test[0].name)
+            const dialog = await fileDialog()
+            const buffer = await dialog[0].arrayBuffer()
             const geometry = new STLLoader().parse(buffer)
+            modelRef.current=geometry
+            setModel(dialog[0].name)
+            console.log(dialog[0].name)
             console.log(geometry)
-            observableModel.set(geometry)
         }} roundedTopLeft type={ButtonType.IMPORT} down={ButtonBorderType.LIGHT} right={ButtonBorderType.LIGHT} />
         <Button inline type={ButtonType.POSITION} left={ButtonBorderType.DARK} right={ButtonBorderType.LIGHT} />
         <Button inline type={ButtonType.ROTATE} left={ButtonBorderType.DARK} right={ButtonBorderType.LIGHT} />
