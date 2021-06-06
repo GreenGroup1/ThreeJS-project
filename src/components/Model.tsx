@@ -3,7 +3,7 @@ import { MutableRefObject, useEffect, useRef, useState } from "react"
 import { DoubleSide, Camera, Event, BufferGeometry } from 'three'
 import { useRecoilState } from 'recoil'
 import { OrbitControls, TransformControls as TransformControlsImpl } from "three-stdlib"
-import { TransformControls } from "@react-three/drei"
+import { TransformControls } from "./TransformControls"
 
 type ModelProps = {
   orbit:MutableRefObject<OrbitControls|null>,

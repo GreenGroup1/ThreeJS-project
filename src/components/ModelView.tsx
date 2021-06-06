@@ -24,6 +24,7 @@ export const ModelView = ({modelRef}:{modelRef:MutableRefObject<BufferGeometry|u
           <pointLight position={[10, 10, 10]} />
           <Model {...{orbit, modelRef}} />
           <gridHelper args={[10,20,'#bbb','#ccc']} />
+          {/*//@ts-ignore */}
           <OrbitControls ref={orbit} />
           <Viewcube {...{orbit}}/>
         </RecoilBridge>
