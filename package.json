@@ -15,6 +15,7 @@
     "@types/react-dom": "^17.0.4",
     "@types/three": "^0.127.1",
     "file-dialog": "^0.0.8",
+    "lerp": "^1.0.3",
     "lodash.omit": "^4.5.0",
     "lodash.pick": "^4.4.0",
     "react": "^17.0.2",
@@ -40,14 +41,7 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ],
-    "rules": {
-      "no-unused-vars": "off",
-      "semi": [
-        "error",
-        "never"
-      ]
-    }
+    ]
   },
   "browserslist": {
     "production": [

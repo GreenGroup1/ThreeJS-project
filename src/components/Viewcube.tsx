@@ -1,12 +1,22 @@
-import { Scene, Matrix4, Camera, Mesh } from 'three'
-import { useRef, useMemo, useState, MutableRefObject, ReactElement } from 'react'
+import { Scene, Matrix4, Camera, Mesh, Vector3 } from 'three'
+import { useRef, useMemo, useState, MutableRefObject, ReactElement, useEffect } from 'react'
 import { useFrame, useThree, createPortal } from '@react-three/fiber'
 import { PerspectiveCamera, useCamera } from '@react-three/drei'
 import { OrbitControls } from 'three-stdlib'
-
+import { atoms, ViewportProps } from 'misc'
+import { useRecoilState } from 'recoil'
 type ViewcubeProps = {
   orbit:MutableRefObject<OrbitControls|null>
 }
+
+const boxPositions:ViewportProps[] = [
+  {tx:0,ty:0,tz:0,x:10,y:0,z:0,zoom:1},
+  {tx:0,ty:0,tz:0,x:-10,y:0,z:0,zoom:1},
+  {tx:0,ty:0,tz:0,x:0,y:10,z:0,zoom:1},
+  {tx:0,ty:0,tz:0,x:0,y:-10,z:0,zoom:1},
+  {tx:0,ty:0,tz:0,x:0,y:0,z:10,zoom:1},
+  {tx:0,ty:0,tz:0,x:0,y:0,z:-10,zoom:1}
+]
 
 export default function Viewcube({orbit}:ViewcubeProps) {
   const { gl, scene, camera, size } = useThree()
@@ -15,6 +25,7 @@ export default function Viewcube({orbit}:ViewcubeProps) {
   const ref = useRef<Mesh>()
   const [hover, set] = useState<number|null>(null)
   const matrix = new Matrix4()
+  const [viewport, setViewport] = useRecoilState(atoms.viewport)
 
   useFrame(() => {
     if(!ref.current || !orbit.current){ return }
@@ -45,8 +56,16 @@ export default function Viewcube({orbit}:ViewcubeProps) {
         ref={ref}
         raycast={useCamera(virtualCam as MutableRefObject<Camera>)}
         position={[0, 0, 0]}
+        onClick={()=>{
+          if(hover!==null) {
+            console.log(boxPositions[hover])
+            setViewport(boxPositions[hover])
+          }
+          console.log(hover, orbit.current?.target, camera.position, camera.zoom)
+        }}
         onPointerOut={() => set(null)}
-        onPointerMove={(e) => set(Math.floor((e.faceIndex||0) / 2))}>
+        onPointerMove={(e) => set(Math.floor((e.faceIndex||0) / 2))}
+      >
         {[...Array(6)].map((_, index) => (
           <meshStandardMaterial attachArray="material" key={index} color={hover === index ? 'hotpink' : 'white'} />
         ))}

@@ -1,9 +1,12 @@
 import { atoms } from "misc"
 import { MutableRefObject, useEffect, useRef, useState } from "react"
-import { DoubleSide, Camera, Event, BufferGeometry } from 'three'
+import { DoubleSide, Camera, Event, BufferGeometry, Object3D } from 'three'
 import { useRecoilState } from 'recoil'
 import { OrbitControls, TransformControls as TransformControlsImpl } from "three-stdlib"
 import { TransformControls } from "./TransformControls"
+import { Mesh } from 'core/mesh'
+import { MeshIO } from 'core/utils/meshio'
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter'
 
 type ModelProps = {
   orbit:MutableRefObject<OrbitControls|null>,
@@ -14,6 +17,7 @@ export const Model = ({orbit, modelRef}:ModelProps) => {
   const [ model, setModel ] = useRecoilState(atoms.model)
   const transform = useRef<TransformControlsImpl<Camera>>(null)
   const [ mode, setMode ] = useRecoilState(atoms.transformMode)
+  const mesh = useRef<Object3D>(null)
 
   useEffect(() => {
     if (transform.current) {
@@ -25,6 +29,20 @@ export const Model = ({orbit, modelRef}:ModelProps) => {
     }
   })
 
+  useEffect(()=>{
+    if(model && mesh.current){
+      console.log(mesh.current, 'it is mesh')
+      //@ts-ignore
+      const exporter = new OBJExporter()
+      const objFormatted = exporter.parse(mesh.current)
+      const meshSoup = MeshIO.readOBJ(objFormatted)
+      const meshObject = new Mesh().build(meshSoup)
+      console.log(meshSoup,meshObject, 'formatted')
+
+      // console.log(objFormatted, mesh, meshSoup, 'it is mesh')
+    }
+  },[model])
+
   if ((!model) || (!modelRef.current)) {
     return null
   }
@@ -32,7 +50,7 @@ export const Model = ({orbit, modelRef}:ModelProps) => {
   return <>
   {/*//@ts-ignore  */}
     <TransformControls ref={transform} size={0.6}>
-      <mesh geometry={modelRef.current} position={[0, 1.5, 0]} rotation={[0, 0, 0]} scale={[0.1, 0.1, 0.1]}>
+      <mesh ref={mesh} geometry={modelRef.current} position={[0, 1.5, 0]} rotation={[0, 0, 0]} scale={[0.1, 0.1, 0.1]}>
         <meshLambertMaterial attach="material" color="#999" side={DoubleSide} />
       </mesh>
     </TransformControls>

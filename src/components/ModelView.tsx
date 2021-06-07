@@ -6,6 +6,7 @@ import { useRecoilBridgeAcrossReactRoots_UNSTABLE } from "recoil"
 import { MutableRefObject, useRef } from 'react'
 import { BufferGeometry } from 'three'
 import Viewcube from './Viewcube'
+import Navigate from './Navigate'
 
 export const ModelView = ({modelRef}:{modelRef:MutableRefObject<BufferGeometry|undefined>}) => {
   const RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE()
@@ -26,6 +27,7 @@ export const ModelView = ({modelRef}:{modelRef:MutableRefObject<BufferGeometry|u
           <gridHelper args={[10,20,'#bbb','#ccc']} />
           {/*//@ts-ignore */}
           <OrbitControls ref={orbit} />
+          <Navigate {...{orbit: orbit as MutableRefObject<OrbitControlsType>}} />
           <Viewcube {...{orbit}}/>
         </RecoilBridge>
       </Canvas>

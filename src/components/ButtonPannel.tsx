@@ -10,6 +10,8 @@ export const ButtonPannel = ({modelRef}:{modelRef:MutableRefObject<BufferGeometr
     
   const [ model, setModel ] = useRecoilState(atoms.model)
   const [ mode, setMode ] = useRecoilState(atoms.transformMode)
+  const [ zoom, setZoom ] = useRecoilState(atoms.zoom)
+  const [ nextZoom, setNextZoom ] = useRecoilState(atoms.nextZoom)
 
     return <div style={{position:'absolute', pointerEvents:'none'}}>
         <Button inline onClick={async () => {
@@ -28,8 +30,8 @@ export const ButtonPannel = ({modelRef}:{modelRef:MutableRefObject<BufferGeometr
         <Button onClick={()=>{
           setMode('rotate')
         }} inline type={ButtonType.ROTATE} left={ButtonBorderType.DARK} right={ButtonBorderType.LIGHT} />
-        <Button inline type={ButtonType.ZOOMIN} left={ButtonBorderType.DARK} right={ButtonBorderType.LIGHT} />
-        <Button inline roundedTopRight roundedBottomRight type={ButtonType.ZOOMOUT} left={ButtonBorderType.DARK} />
+        <Button onClick={()=>{console.log('zoom in'); setNextZoom(zoom*2)}} inline type={ButtonType.ZOOMIN} left={ButtonBorderType.DARK} right={ButtonBorderType.LIGHT} />
+        <Button onClick={()=>{console.log('zoom out'); setNextZoom(zoom*0.5)}} inline roundedTopRight roundedBottomRight type={ButtonType.ZOOMOUT} left={ButtonBorderType.DARK} />
         <Button type={ButtonType.BASE} />
         <Button type={ButtonType.EMBOSS} />
         <Button type={ButtonType.EXPORT} />
