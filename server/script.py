@@ -22,6 +22,9 @@ number_of_cubes = int(args.number)
 if number_of_cubes > 1:
   for x in range(0, number_of_cubes):
     bpy.ops.mesh.primitive_cube_add(location=(x, 0, 0))
- 
+
+bpy.ops.mesh.beautify_fill()
+bpy.ops.mesh.solidify()
+
 # export scene
 bpy.ops.export_scene.obj(filepath=args.save)
