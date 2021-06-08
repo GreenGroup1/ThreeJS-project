@@ -2,11 +2,12 @@ import { atoms } from "misc"
 import { MutableRefObject, useEffect, useRef, useState } from "react"
 import { DoubleSide, Camera, Event, BufferGeometry, Object3D } from 'three'
 import { useRecoilState } from 'recoil'
-import { OrbitControls, TransformControls as TransformControlsImpl } from "three-stdlib"
+import { OrbitControls, TransformControls as TransformControlsImpl, mergeVertices } from "three-stdlib"
 import { TransformControls } from "./TransformControls"
 import { Mesh } from 'core/mesh'
 import { MeshIO } from 'core/utils/meshio'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter'
+import { Vertex } from 'core/vertex'
 
 type ModelProps = {
   orbit:MutableRefObject<OrbitControls|null>,
@@ -31,13 +32,19 @@ export const Model = ({orbit, modelRef}:ModelProps) => {
 
   useEffect(()=>{
     if(model && mesh.current){
-      console.log(mesh.current, 'it is mesh')
-      //@ts-ignore
-      const exporter = new OBJExporter()
-      const objFormatted = exporter.parse(mesh.current)
-      const meshSoup = MeshIO.readOBJ(objFormatted)
-      const meshObject = new Mesh().build(meshSoup)
-      console.log(meshSoup,meshObject, 'formatted')
+      // console.log(mesh.current, 'it is mesh')
+      // //@ts-ignore
+      // const exporter = new OBJExporter()
+      // const objFormatted = exporter.parse(mesh.current)
+      // const meshSoup = MeshIO.readOBJ(objFormatted)
+      // //@ts-ignore
+      // const filterIndices = meshSoup.f.filter((ind:number)=>ind===-1)
+      // console.log(filterIndices)
+      // const meshObject = new Mesh().build(meshSoup)
+      
+      // const vertex = new Vertex()
+      // //@ts-ignore
+      // console.log(meshSoup, meshSoup?.v[0], meshObject, 'formatted')
 
       // console.log(objFormatted, mesh, meshSoup, 'it is mesh')
     }

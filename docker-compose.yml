@@ -1,0 +1,6 @@
+version: '3'
+services:
+
+  blender:
+    image: nytimes/blender:2.92-cpu-ubuntu18.04
+

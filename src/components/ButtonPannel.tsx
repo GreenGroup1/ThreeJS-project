@@ -1,7 +1,7 @@
 import fileDialog from 'file-dialog'
 import { Button, ButtonBorderType, ButtonType } from "./Button"
 import { atoms } from "misc"
-import { STLLoader } from "three-stdlib"
+import { STLLoader, mergeVertices } from "three-stdlib"
 import { MutableRefObject, useContext } from 'react'
 import { useRecoilState } from 'recoil'
 import { BufferGeometry } from 'three'
@@ -18,7 +18,8 @@ export const ButtonPannel = ({modelRef}:{modelRef:MutableRefObject<BufferGeometr
             const dialog = await fileDialog()
             const buffer = await dialog[0].arrayBuffer()
             const geometry = new STLLoader().parse(buffer)
-            modelRef.current=geometry
+            const merged = mergeVertices(geometry, 0.05)
+            modelRef.current= merged
             setModel(dialog[0].name)
             console.log(dialog[0].name)
             console.log(geometry)
