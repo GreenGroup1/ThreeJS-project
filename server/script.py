@@ -1,5 +1,5 @@
 import argparse
-import bpy
+import bpy 
  
 def get_args():
   parser = argparse.ArgumentParser()
