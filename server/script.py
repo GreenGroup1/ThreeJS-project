@@ -24,7 +24,12 @@ bpy.ops.import_mesh.stl(filepath='./server/oriented.stl') #should be y up
 if bpy.context.mode != 'OBJECT':
     bpy.ops.object.mode_set(mode='OBJECT')
 
+mesh_object = bpy.context.scene.objects['Oriented']
+print(bpy.data.meshes.keys(), mesh_object, bpy.context.scene.objects.keys())
+
 bpy.ops.object.select_all(action='SELECT')
+print('selected all')
+
 # This is to make sure that there is an active object in the scene:
 #----------------------------------------------
 if not bpy.context.active_object.hide_viewport:
@@ -33,23 +38,28 @@ if not bpy.context.active_object.hide_viewport:
             bpy.context.view_layer.objects.active = object
             break
 #----------------------------------------------
+
+
 bpy.ops.object.join()
 bpy.ops.object.convert(target='MESH') # Here I've added an option which will
                                       # apply all modifiers by converting object
                                       # to mesh
+
 bpy.ops.object.mode_set(mode='EDIT')
 bpy.ops.object.editmode_toggle()
 
+
 bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.select_all(action='SELECT')
 
 # clear selection
-bpy.ops.object.select_all(action='DESELECT')
+bpy.ops.mesh.select_all(action='DESELECT')
 
 # then select non-manifold
 bpy.ops.mesh.select_non_manifold(use_boundary=False)
 # then delete non manifold if any. Clear selection
 
-bpy.ops.object.select_all(action='DESELECT')
+bpy.ops.mesh.select_all(action='DESELECT')
 # deselect
 
 bpy.ops.mesh.select_non_manifold(extend=False, use_wire=False, use_boundary=True, use_multi_face=False, use_non_contiguous=False, use_verts=False)
@@ -97,7 +107,7 @@ bpy.ops.transform.resize(
   release_confirm=True)
 
 bpy.ops.transform.translate(
-  value=(0, 0, 20), 
+  value=(0, 0, 10), 
   orient_type='GLOBAL', 
   orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), 
   orient_matrix_type='GLOBAL', 
@@ -113,7 +123,7 @@ bpy.ops.transform.translate(
 bpy.ops.mesh.extrude_edges_move(
   MESH_OT_extrude_edges_indiv={"use_normal_flip":False, "mirror":False}, 
   TRANSFORM_OT_translate={
-    "value":(0, 0, 5), 
+    "value":(0, 0, 2), 
     "orient_type":'GLOBAL', 
     "orient_matrix":((1, 0, 0), (0, 1, 0), (0, 0, 1)), 
     "orient_matrix_type":'GLOBAL', 
@@ -138,3 +148,7 @@ bpy.ops.mesh.extrude_edges_move(
 
 bpy.ops.mesh.merge(type='CENTER')
 
+# export scene
+bpy.ops.export_scene.obj(filepath=args.save)
+
+bpy.ops.export_mesh.stl(filepath='./server/processed.stl')
