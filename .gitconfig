@@ -7,4 +7,4 @@
 [pull]
 	rebase = false
 [credential]
-	helper = "!f() { /root/.vscode-server/bin/b4c1bd0a9b03c749ea011b06c6d2676c8091a70c/node /tmp/vscode-remote-containers-21fa34b0a0cb13c16a919576631b1e62d3046c64.js $*; }; f"
+	helper = "!f() { /root/.vscode-server/bin/b4c1bd0a9b03c749ea011b06c6d2676c8091a70c/node /tmp/vscode-remote-containers-4a8c78fad5f88fb13d8aaab01752d95d1c55d47b.js $*; }; f"

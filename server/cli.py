@@ -10,12 +10,20 @@ def get_args():
     script_args = all_arguments[double_dash_index + 1: ]
   
     # add parser rules
-    parser.add_argument('-n', '--number', help="number of cubes")
-    parser.add_argument('-m', '--save', help="output file")
+    parser.add_argument('-f', '--file', help="input file")
     parsed_script_args, _ = parser.parse_known_args(script_args)
     return parsed_script_args
- 
+
 args = get_args()
+file = './server/Oriented.stl'
+if hasattr(args, 'file'):
+  file = args.file
+print(file)
+
+filename = file.split(sep="/")[-1].split(sep=".")[0]
+print(filename)
+if filename[0].isupper()==bool(0):
+    filename=filename[0].capitalize()[0]+filename[1:]
 
 def process_model():
     cube = bpy.data.meshes['Cube']
@@ -28,12 +36,14 @@ def process_model():
     bpy.data.objects.remove(light)
 
     # import model
-    bpy.ops.import_mesh.stl(filepath='./server/oriented.stl') #should be y up
+    bpy.ops.import_mesh.stl(
+      filepath=file,
+      axis_up='Y')
 
     if bpy.context.mode != 'OBJECT':
         bpy.ops.object.mode_set(mode='OBJECT')
 
-    mesh_object = bpy.context.scene.objects['Oriented']
+    mesh_object = bpy.context.scene.objects[filename]
     print(bpy.data.meshes.keys(), mesh_object, bpy.context.scene.objects.keys())
 
     bpy.ops.object.select_all(action='SELECT')
@@ -159,7 +169,8 @@ def process_model():
         "use_accurate":False})
 
     bpy.ops.mesh.merge(type='CENTER')
-
-    bpy.ops.export_mesh.stl(filepath='./server/processed.stl')
+    output = file.replace('.stl','')+'_processed.stl'
+    bpy.ops.export_mesh.stl(filepath=output)
+    return 0
 
 process_model()
