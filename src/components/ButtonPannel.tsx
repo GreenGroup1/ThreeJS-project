@@ -43,9 +43,10 @@ export const ButtonPannel = ({geometryRef, modelRef}:ButtonsProps) => {
           if(model && modelRef.current){
             const exporter = new STLExporter()
             const stlFormatted = exporter.parse(modelRef.current)
-            console.log(stlFormatted)
+            // console.log(stlFormatted)
             const formData  = new FormData();
-            formData.append('model.stl', stlFormatted)
+            var blob = new Blob([stlFormatted], { type: "text/xml"});
+            formData.append('model.stl', blob, 'model.stl')
             fetch('https://edit.dentalmodelmaker.com/', { // Your POST endpoint
               method: 'POST',
               headers: {
