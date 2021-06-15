@@ -1,14 +1,15 @@
 import { Fragment, useRef } from "react"
 import { ButtonPannel, ModelView } from "components"
-import { BufferGeometry } from "three"
+import { BufferGeometry, Object3D } from "three"
 
 export const MainScreen = () => {
-  const modelRef = useRef<BufferGeometry|undefined>()
+  const geometryRef = useRef<BufferGeometry|undefined>()
+  const modelRef = useRef<Object3D|undefined>()
 
   return (
     <Fragment>
-      <ModelView {...{modelRef}} />
-      <ButtonPannel {...{modelRef}}  />
+      <ModelView {...{geometryRef, modelRef}} />
+      <ButtonPannel {...{geometryRef, modelRef}}  />
     </Fragment>
   )
 }

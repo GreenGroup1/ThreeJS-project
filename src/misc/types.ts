@@ -7,5 +7,5 @@ export const defaultPosition:ViewportProps = {
 export type ViewportProps = {
   x:number, y:number, z:number,
   tx:number, ty:number, tz:number,
-  zoom: number
+  zoom: number, timestamp?: Date
 }

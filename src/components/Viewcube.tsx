@@ -6,7 +6,9 @@ import { OrbitControls } from 'three-stdlib'
 import { atoms, ViewportProps } from 'misc'
 import { useRecoilState } from 'recoil'
 type ViewcubeProps = {
-  orbit:MutableRefObject<OrbitControls|null>
+  orbit:MutableRefObject<OrbitControls|null>,
+  setOrthogonal: Function,
+  isOrthogonal: boolean
 }
 
 const boxPositions:ViewportProps[] = [
@@ -18,7 +20,7 @@ const boxPositions:ViewportProps[] = [
   {tx:0,ty:0,tz:0,x:0,y:0,z:-10,zoom:1}
 ]
 
-export default function Viewcube({orbit}:ViewcubeProps) {
+export default function Viewcube({orbit, isOrthogonal, setOrthogonal}:ViewcubeProps) {
   const { gl, scene, camera, size } = useThree()
   const virtualScene = useMemo(() => new Scene(), [])
   const virtualCam = useRef<Camera>()
@@ -39,6 +41,32 @@ export default function Viewcube({orbit}:ViewcubeProps) {
     gl.clearDepth()
     if(!virtualCam.current){ return }
     gl.render(virtualScene, virtualCam.current)
+    CheckOrtho()
+
+    function CheckOrtho (){
+      const precision = 0.1
+      if(orbit.current?.target && orbit.current.object.position ){
+        const {x:tx,y:ty,z:tz} = orbit.current?.target
+        const {x,y,z} = orbit.current.object.position
+        if(boxPositions.reduce((acc,v)=>{
+          const near = Math.abs(v.tx-tx)<precision && 
+            Math.abs(v.ty-ty)<precision && 
+            Math.abs(v.tz-tz)<precision && 
+            Math.abs(v.x-x)<precision && 
+            Math.abs(v.y-y)<precision && 
+            Math.abs(v.z-z)<precision
+          return acc || near
+        }, false)){
+          if(!isOrthogonal){
+            setOrthogonal(true)
+          }
+        }else{
+          if(isOrthogonal){
+            setOrthogonal(false)
+          }
+        }
+      }
+    }
   }, 1)
 
   return createPortal(
@@ -59,7 +87,8 @@ export default function Viewcube({orbit}:ViewcubeProps) {
         onClick={()=>{
           if(hover!==null) {
             console.log(boxPositions[hover])
-            setViewport(boxPositions[hover])
+            setViewport({...boxPositions[hover], timestamp: new Date()})
+            setOrthogonal(true)
           }
           console.log(hover, orbit.current?.target, camera.position, camera.zoom)
         }}

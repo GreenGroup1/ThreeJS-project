@@ -7,18 +7,20 @@ import { TransformControls } from "./TransformControls"
 import { Mesh } from 'core/mesh'
 import { MeshIO } from 'core/utils/meshio'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter'
+import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
+
 import { Vertex } from 'core/vertex'
 
 type ModelProps = {
   orbit:MutableRefObject<OrbitControls|null>,
-  modelRef:MutableRefObject<BufferGeometry|undefined>
+  geometryRef:MutableRefObject<BufferGeometry|undefined>,
+  modelRef:MutableRefObject<Object3D|undefined>
 }
 
-export const Model = ({orbit, modelRef}:ModelProps) => {
+export const Model = ({orbit, geometryRef, modelRef}:ModelProps) => {
   const [ model, setModel ] = useRecoilState(atoms.model)
   const transform = useRef<TransformControlsImpl<Camera>>(null)
   const [ mode, setMode ] = useRecoilState(atoms.transformMode)
-  const mesh = useRef<Object3D>(null)
 
   useEffect(() => {
     if (transform.current) {
@@ -30,34 +32,14 @@ export const Model = ({orbit, modelRef}:ModelProps) => {
     }
   })
 
-  useEffect(()=>{
-    if(model && mesh.current){
-      // console.log(mesh.current, 'it is mesh')
-      // //@ts-ignore
-      // const exporter = new OBJExporter()
-      // const objFormatted = exporter.parse(mesh.current)
-      // const meshSoup = MeshIO.readOBJ(objFormatted)
-      // //@ts-ignore
-      // const filterIndices = meshSoup.f.filter((ind:number)=>ind===-1)
-      // console.log(filterIndices)
-      // const meshObject = new Mesh().build(meshSoup)
-      
-      // const vertex = new Vertex()
-      // //@ts-ignore
-      // console.log(meshSoup, meshSoup?.v[0], meshObject, 'formatted')
-
-      // console.log(objFormatted, mesh, meshSoup, 'it is mesh')
-    }
-  },[model])
-
-  if ((!model) || (!modelRef.current)) {
+  if ((!model) || (!geometryRef.current)) {
     return null
   }
     
   return <>
   {/*//@ts-ignore  */}
     <TransformControls ref={transform} size={0.6}>
-      <mesh ref={mesh} geometry={modelRef.current} position={[0, 1.5, 0]} rotation={[0, 0, 0]} scale={[0.1, 0.1, 0.1]}>
+      <mesh ref={modelRef} geometry={geometryRef.current} position={[0, 1.5, 0]} rotation={[0, 0, 0]} scale={[0.1, 0.1, 0.1]}>
         <meshLambertMaterial attach="material" color="#999" side={DoubleSide} />
       </mesh>
     </TransformControls>
