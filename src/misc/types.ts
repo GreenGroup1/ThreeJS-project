@@ -1,5 +1,5 @@
 export const defaultPosition:ViewportProps = {
-  x:5, y:5, z:5,
+  x:50, y:50, z:50,
   tx:0, ty:0, tz:0,
   zoom: 1
 }

@@ -1,48 +1,47 @@
 import { Canvas } from '@react-three/fiber'
 import { Model } from "./Model"
 import { OrbitControls } from "@react-three/drei"
-import { OrbitControls as OrbitControlsType } from 'three-stdlib'
 import { useRecoilBridgeAcrossReactRoots_UNSTABLE } from "recoil"
-import { MutableRefObject, useRef, useState } from 'react'
-import { BufferGeometry, Object3D } from 'three'
+import { useState } from 'react'
 import Viewcube from './Viewcube'
 import Navigate from './Navigate'
-import { useEffect } from 'react'
+import { ModelContext } from 'context'
+import { useContext } from 'react'
 
-type ModelViewProps = {
-  geometryRef:MutableRefObject<BufferGeometry|undefined>
-  modelRef:MutableRefObject<Object3D|undefined>
-}
-
-export const ModelView = ({geometryRef, modelRef}:ModelViewProps) => {
+export const ModelView = () => {
   const RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE()
-  const orbit = useRef<OrbitControlsType>(null)
   const [ isOrthogonal, setOrthogonal ] = useState(false)
-
+  const { orbit } = useContext(ModelContext)
   
   return <div style={{position:'absolute', height:'100%', width:'100%'}}>
-      <Canvas 
-        shadows
-        dpr={window.devicePixelRatio*1}
-        camera={{
-          position:[3,4,3]
-        }}
-      >
-        <RecoilBridge>
-          <ambientLight />
-          <pointLight position={[10, 10, 10]} />
-          <pointLight position={[-10, 10, 10]} />
-          <Model {...{orbit, geometryRef, modelRef}} />
-          {isOrthogonal&&<>
-            <gridHelper args={[10,20,'#bbb','#ccc']} />
-            <gridHelper args={[10,20,'#bbb','#ccc']} rotation={[0,0,Math.PI/2]}/>
-            <gridHelper args={[10,20,'#bbb','#ccc']} rotation={[0,Math.PI/2,Math.PI/2]}/>
-          </>}
-          {/*//@ts-ignore */}
-          <OrbitControls ref={orbit} />
-          <Navigate {...{orbit: orbit as MutableRefObject<OrbitControlsType>}} />
-          <Viewcube {...{orbit, isOrthogonal, setOrthogonal}}/>
-        </RecoilBridge>
-      </Canvas>
+    <ModelContext.Consumer>
+      {value=>(
+        <Canvas 
+          shadows
+          dpr={window.devicePixelRatio*1}
+          camera={{
+            position:[600,800,600]
+          }}
+        >
+          <ModelContext.Provider value={value}>
+            <RecoilBridge>
+              <ambientLight />
+              <pointLight position={[100, 100, 100]} intensity={0.8}/>
+              <pointLight position={[-100, 100, 100]} intensity={0.8}/>
+              <Model/>
+              {isOrthogonal&&<>
+                <gridHelper args={[10,20,'#bbb','#ccc']} scale={[10,10,10]}/>
+                <gridHelper args={[10,20,'#bbb','#ccc']} scale={[10,10,10]} rotation={[0,0,Math.PI/2]}/>
+                <gridHelper args={[10,20,'#bbb','#ccc']} scale={[10,10,10]} rotation={[0,Math.PI/2,Math.PI/2]}/>
+              </>}
+              {/*//@ts-ignore */}
+              <OrbitControls ref={orbit} />
+              <Navigate />
+              <Viewcube {...{isOrthogonal, setOrthogonal}}/>
+            </RecoilBridge>
+          </ModelContext.Provider>
+        </Canvas>
+      )}
+    </ModelContext.Consumer>
   </div>
 }

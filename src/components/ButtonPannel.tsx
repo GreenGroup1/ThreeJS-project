@@ -1,31 +1,30 @@
 import fileDialog from 'file-dialog'
 import { Button, ButtonBorderType, ButtonType } from "./Button"
 import { atoms } from "misc"
-import { STLLoader, mergeVertices } from "three-stdlib"
-import { MutableRefObject, useContext } from 'react'
+import { STLLoader } from "three-stdlib"
 import { useRecoilState } from 'recoil'
-import { BufferGeometry, Object3D } from 'three'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
+import { v4 as uuid} from 'uuid'
+import { useContext } from 'react'
+import { ModelContext } from 'context'
 
-type ButtonsProps = {
-  geometryRef:MutableRefObject<BufferGeometry|undefined>,
-  modelRef:MutableRefObject<Object3D|undefined>
-}
-
-export const ButtonPannel = ({geometryRef, modelRef}:ButtonsProps) => {
+export const ButtonPannel = () => {
     
   const [ model, setModel ] = useRecoilState(atoms.model)
   const [ mode, setMode ] = useRecoilState(atoms.transformMode)
   const [ zoom, setZoom ] = useRecoilState(atoms.zoom)
   const [ nextZoom, setNextZoom ] = useRecoilState(atoms.nextZoom)
+  const { geometryRef, modelRef, transform, orbit } = useContext(ModelContext)
+  const [,setViewport] = useRecoilState(atoms.viewport)
+  const [ needsUpdate, setNeedsUpdate ] = useRecoilState(atoms.needsUpdate)
 
     return <div style={{position:'absolute', pointerEvents:'none'}}>
         <Button inline onClick={async () => {
             const dialog = await fileDialog()
             const buffer = await dialog[0].arrayBuffer()
             const geometry = new STLLoader().parse(buffer)
-            const merged = mergeVertices(geometry, 0.05)
-            geometryRef.current= merged
+            // const merged = mergeVertices(geometry, 0.05)
+            geometryRef.current= geometry
             setModel(dialog[0].name)
             console.log(dialog[0].name)
             console.log(geometry)
@@ -42,24 +41,27 @@ export const ButtonPannel = ({geometryRef, modelRef}:ButtonsProps) => {
         <Button onClick={()=>{
           if(model && modelRef.current){
             const exporter = new STLExporter()
-            const stlFormatted = exporter.parse(modelRef.current)
-            // console.log(stlFormatted)
-            const formData  = new FormData();
-            var blob = new Blob([stlFormatted], { type: "text/xml"});
-            formData.append('model.stl', blob, 'model.stl')
-            fetch('https://edit.dentalmodelmaker.com/', { // Your POST endpoint
+            const stlFormatted = exporter.parse(modelRef.current, {binary:true})
+            console.log(stlFormatted)
+            const file = new File([stlFormatted],`${uuid()}.stl`, {type: "model/stl"})    
+            const formData  = new FormData()     
+            formData.append('file', file, `${uuid()}.stl`)
+            fetch('https://edit.dentalmodelmaker.com/', { 
               method: 'POST',
-              headers: {
-                "Content-Type": "multipart/form-data"
-              },
-              body: formData // This is your file object
+              body: formData,
             }).then(
-              response => response.text()
+              response => response.arrayBuffer()
             ).then(
-              success => console.log('loaded modified', success) // Handle the success response object
+              success => {
+                const geometry = new STLLoader().parse(success)
+                geometryRef.current=geometry    
+                setNeedsUpdate(true)
+              }
             ).catch(
-              error => console.log(error) // Handle the error response object
+              error => console.log(error)
             );
+            
+
           }
         }} type={ButtonType.BASE} />
         <Button type={ButtonType.EMBOSS} />

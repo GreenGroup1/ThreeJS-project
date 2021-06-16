@@ -1,26 +1,27 @@
 import { atoms } from "misc"
-import { MutableRefObject, useEffect, useRef, useState } from "react"
-import { DoubleSide, Camera, Event, BufferGeometry, Object3D } from 'three'
+import { useEffect } from "react"
+import { DoubleSide, Event } from 'three'
 import { useRecoilState } from 'recoil'
 import { OrbitControls, TransformControls as TransformControlsImpl, mergeVertices } from "three-stdlib"
 import { TransformControls } from "./TransformControls"
-import { Mesh } from 'core/mesh'
-import { MeshIO } from 'core/utils/meshio'
-import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter'
-import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
+import { useContext } from "react"
+import { ModelContext } from "context"
+import { useFrame, useThree } from "@react-three/fiber"
 
-import { Vertex } from 'core/vertex'
-
-type ModelProps = {
-  orbit:MutableRefObject<OrbitControls|null>,
-  geometryRef:MutableRefObject<BufferGeometry|undefined>,
-  modelRef:MutableRefObject<Object3D|undefined>
-}
-
-export const Model = ({orbit, geometryRef, modelRef}:ModelProps) => {
+export const Model = () => {
   const [ model, setModel ] = useRecoilState(atoms.model)
-  const transform = useRef<TransformControlsImpl<Camera>>(null)
   const [ mode, setMode ] = useRecoilState(atoms.transformMode)
+  const [ needsUpdate, setNeedsUpdate ] = useRecoilState(atoms.needsUpdate)
+
+  const { transform, geometryRef, orbit, modelRef } = useContext(ModelContext)
+  const { gl, scene, camera, size } = useThree()
+
+  useFrame(()=>{
+    if(needsUpdate){
+      gl.render(scene, camera)
+      setNeedsUpdate(false)
+    }
+  },1)
 
   useEffect(() => {
     if (transform.current) {
@@ -38,10 +39,11 @@ export const Model = ({orbit, geometryRef, modelRef}:ModelProps) => {
     
   return <>
   {/*//@ts-ignore  */}
-    <TransformControls ref={transform} size={0.6}>
-      <mesh ref={modelRef} geometry={geometryRef.current} position={[0, 1.5, 0]} rotation={[0, 0, 0]} scale={[0.1, 0.1, 0.1]}>
+    <TransformControls ref={transform} size={0.6} >
+      <mesh  ref={modelRef} geometry={geometryRef.current} position={[0, 0, 0]} scale={[1, 1, 1]}>
         <meshLambertMaterial attach="material" color="#999" side={DoubleSide} />
       </mesh>
     </TransformControls>
   </>
 }
+

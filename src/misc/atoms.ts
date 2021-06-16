@@ -30,3 +30,8 @@ export const viewport = atom({
   key: 'viewport',
   default: defaultPosition as ViewportProps
 })
+
+export const needsUpdate = atom({
+  key: 'needsUpdate',
+  default: false
+})

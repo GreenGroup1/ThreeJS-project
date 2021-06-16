@@ -1,22 +1,20 @@
 import { Vector3 } from 'three'
-import { MutableRefObject, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls } from 'three-stdlib'
 import { useRecoilState } from 'recoil'
 import { atoms, defaultPosition } from 'misc'
 import lerp from "lerp"
+import { useContext } from 'react'
+import { ModelContext } from 'context'
 
-type NavigateProps = {
-  orbit: MutableRefObject<OrbitControls>, 
-}
 
-export default function Navigate({ orbit }:NavigateProps) {
+export default function Navigate() {
   const { camera } = useThree()
   const [ zoom, setZoom ] = useRecoilState(atoms.zoom)
   const [ nextZoom, setNextZoom ] = useRecoilState(atoms.nextZoom)
   const [ dollyFinished, setDollyFinished ] = useRecoilState(atoms.dolly)
   const [ viewport, setViewport ] = useRecoilState(atoms.viewport)
-
+  const { orbit } = useContext(ModelContext)
   useEffect(()=>{
     setDollyFinished(false)
     console.log('set dolly false')
@@ -36,7 +34,7 @@ export default function Navigate({ orbit }:NavigateProps) {
         )
       }
       camera.zoom = lerp(camera.zoom, viewport.zoom, t)
-      {
+      if(orbit.current){
         const {x,y,z} = orbit.current.target
         if (Math.abs(x-(viewport.tx))<p) setDollyFinished( true )
         orbit.current.target = new Vector3(
@@ -44,8 +42,8 @@ export default function Navigate({ orbit }:NavigateProps) {
           lerp(y, viewport.ty, t),
           lerp(z, viewport.tz, t)
         )
+        orbit.current.update()
       }
-      orbit.current.update()
       camera.updateProjectionMatrix()
     }else if((!dollyFinished)&&nextZoom){
       camera.zoom = lerp(camera.zoom, nextZoom, t)
@@ -54,7 +52,7 @@ export default function Navigate({ orbit }:NavigateProps) {
         setNextZoom( null )
         if(camera.zoom<0.5) {setViewport(defaultPosition); setDollyFinished(true)}
       }
-      orbit.current.update()
+      if(orbit.current) orbit.current.update()
       camera.updateProjectionMatrix()
     }
     setZoom(camera.zoom)

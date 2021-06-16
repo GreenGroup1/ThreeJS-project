@@ -2,32 +2,33 @@ import { Scene, Matrix4, Camera, Mesh, Vector3 } from 'three'
 import { useRef, useMemo, useState, MutableRefObject, ReactElement, useEffect } from 'react'
 import { useFrame, useThree, createPortal } from '@react-three/fiber'
 import { PerspectiveCamera, useCamera } from '@react-three/drei'
-import { OrbitControls } from 'three-stdlib'
 import { atoms, ViewportProps } from 'misc'
 import { useRecoilState } from 'recoil'
+import { useContext } from 'react'
+import { ModelContext } from 'context'
 type ViewcubeProps = {
-  orbit:MutableRefObject<OrbitControls|null>,
   setOrthogonal: Function,
   isOrthogonal: boolean
 }
 
 const boxPositions:ViewportProps[] = [
-  {tx:0,ty:0,tz:0,x:10,y:0,z:0,zoom:1},
-  {tx:0,ty:0,tz:0,x:-10,y:0,z:0,zoom:1},
-  {tx:0,ty:0,tz:0,x:0,y:10,z:0,zoom:1},
-  {tx:0,ty:0,tz:0,x:0,y:-10,z:0,zoom:1},
-  {tx:0,ty:0,tz:0,x:0,y:0,z:10,zoom:1},
-  {tx:0,ty:0,tz:0,x:0,y:0,z:-10,zoom:1}
+  {tx:0,ty:0,tz:0,x:100,y:0,z:0,zoom:1},
+  {tx:0,ty:0,tz:0,x:-100,y:0,z:0,zoom:1},
+  {tx:0,ty:0,tz:0,x:0,y:100,z:0,zoom:1},
+  {tx:0,ty:0,tz:0,x:0,y:-100,z:0,zoom:1},
+  {tx:0,ty:0,tz:0,x:0,y:0,z:100,zoom:1},
+  {tx:0,ty:0,tz:0,x:0,y:0,z:-100,zoom:1}
 ]
 
-export default function Viewcube({orbit, isOrthogonal, setOrthogonal}:ViewcubeProps) {
+export default function Viewcube({isOrthogonal, setOrthogonal}:ViewcubeProps) {
   const { gl, scene, camera, size } = useThree()
   const virtualScene = useMemo(() => new Scene(), [])
   const virtualCam = useRef<Camera>()
   const ref = useRef<Mesh>()
   const [hover, set] = useState<number|null>(null)
   const matrix = new Matrix4()
-  const [viewport, setViewport] = useRecoilState(atoms.viewport)
+  const [ viewport, setViewport ] = useRecoilState(atoms.viewport)
+  const { orbit } = useContext(ModelContext)
 
   useFrame(() => {
     if(!ref.current || !orbit.current){ return }
@@ -44,7 +45,7 @@ export default function Viewcube({orbit, isOrthogonal, setOrthogonal}:ViewcubePr
     CheckOrtho()
 
     function CheckOrtho (){
-      const precision = 0.1
+      const precision = 1
       if(orbit.current?.target && orbit.current.object.position ){
         const {x:tx,y:ty,z:tz} = orbit.current?.target
         const {x,y,z} = orbit.current.object.position
