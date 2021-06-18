@@ -1,4 +1,3 @@
-export * from './Button'
-export * from './ButtonPannel'
-export * from './Model'
-export * from './ModelView'
+export * from './Sidepanel'
+export * from './Viewport'
+export * from './Loader'

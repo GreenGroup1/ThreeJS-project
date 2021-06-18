@@ -11,6 +11,11 @@ export const transformMode = atom({
   default: "rotate" as "scale"|"rotate"|"translate"
 })
 
+export const transformable = atom({
+  key: 'transformable',
+  default: false
+})
+
 export const dolly = atom({
   key: 'dolly',
   default: true
@@ -34,4 +39,19 @@ export const viewport = atom({
 export const needsUpdate = atom({
   key: 'needsUpdate',
   default: false
+})
+
+export const transformCoordinate = atom({
+  key: 'transformCoordinate',
+  default: 'local' as 'local'|'world'
+})
+
+export const loading = atom({
+  key: 'loading',
+  default: false
+})
+
+export const cursor = atom({
+  key: 'cursor',
+  default: ''
 })
