@@ -65,15 +65,33 @@ export function ButtonPannel() {
   const [ loading, setLoading ] = useRecoilState(atoms.loading)
   const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
 
-    return <div style={{
-      position:'absolute', 
-      top:0,
-      padding: '0.25rem',
-      // border: 'solid rgba(0,0,0,0.2) 1px',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor:'#24242c'
-    }}>
+  function download(file:File, filename:string) {
+    // var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+  }
+
+  return <div style={{
+    position:'absolute', 
+    top:0,
+    padding: '0.25rem',
+    // border: 'solid rgba(0,0,0,0.2) 1px',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor:'#24242c'
+  }}>
         
         <Button title='Import' disabled={loading} onClick={async () => {
             setTransformable(false)
@@ -90,7 +108,17 @@ export function ButtonPannel() {
           <Import style={{color:'#23ABD5'}}/>
         </Button>
         
-        <Button onClick={()=>setTransformable(false)} disabled={loading} title='Export' >
+        <Button onClick={()=>{
+          if(modelRef.current){
+            setTransformable(false)
+            const exporter = new STLExporter()
+            const stlFormatted = exporter.parse(modelRef.current, {binary:true})
+            console.log(stlFormatted, origin)
+            const file = new File([stlFormatted],`${uuid()}.stl`, {type: "model/stl"})    
+            console.log(new Date().toJSON().slice(0,10))
+            download(file,`model.stl`)
+          }
+        }} disabled={loading} title='Export' >
           <Export style={{color:'#23ABD5'}}/>
         </Button>
 
