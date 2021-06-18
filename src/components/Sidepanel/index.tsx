@@ -4,9 +4,9 @@ import { STLLoader } from "three-stdlib"
 import { useRecoilState } from 'recoil'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
 import { v4 as uuid} from 'uuid'
-import { useContext } from 'react'
+import { ReactNode, useContext } from 'react'
 import { ModelContext } from 'context'
-import { IconButton, Button as ButtonRegular, makeStyles, Divider } from '@material-ui/core'
+import { IconButton, Button as ButtonRegular, makeStyles, Divider, ExtendButtonBase, ButtonTypeMap, ButtonProps } from '@material-ui/core'
 
 import { ReactComponent as Base } from 'assets/icons/base.svg'
 import { ReactComponent as EmbossOld } from 'assets/icons/emboss.svg'
@@ -34,7 +34,7 @@ const useStyles = makeStyles(()=>({
   }
 }))
 
-function Button(props:any){
+function Button(props:ButtonProps<'button'>){
   const classes = useStyles()
 
   return <ButtonRegular 
@@ -75,7 +75,7 @@ export function ButtonPannel() {
       backgroundColor:'#24242c'
     }}>
         
-        <Button title='Import' onClick={async () => {
+        <Button title='Import' disabled={loading} onClick={async () => {
             setTransformable(false)
             const dialog = await fileDialog()
             const buffer = await dialog[0].arrayBuffer()
@@ -90,31 +90,31 @@ export function ButtonPannel() {
           <Import style={{color:'#23ABD5'}}/>
         </Button>
         
-        <Button onClick={()=>setTransformable(false)} title='Export' >
+        <Button onClick={()=>setTransformable(false)} disabled={loading} title='Export' >
           <Export style={{color:'#23ABD5'}}/>
         </Button>
 
         <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
 
-        <Button title='Translate' onClick={()=>{
+        <Button title='Translate' disabled={loading} onClick={()=>{
           setMode('translate')
         }}>
           <Arrows fontSize='small' style={{color:'#23ABD5', transform:'rotate(45deg)'}}/>
         </Button>
 
-        <Button title='Rotate'  onClick={()=>{
+        <Button title='Rotate' disabled={loading}  onClick={()=>{
           setMode('rotate')
         }}>
           <Rotate/>
         </Button>
 
-        <Button title='Scale'  onClick={()=>{
+        <Button title='Scale' disabled={loading} onClick={()=>{
           setMode('scale')
         }}>
           <Scale style={{color:'#23ABD5'}}/>
         </Button>
 
-        <Button title='Transformation coordinates'  onClick={()=>{
+        <Button title='Transformation coordinates' disabled={loading} onClick={()=>{
           if(!transformable) setTransformable(true)
           setCoordinate(prev=>prev==='world'?'local':'world')
         }}>
@@ -125,7 +125,7 @@ export function ButtonPannel() {
 
         <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
 
-        <Button title='Solidify'  onClick={()=>{
+        <Button title='Solidify' disabled={loading}  onClick={()=>{
           if(model && modelRef.current){
             setTransformable(false)
             setLoading(true)
@@ -167,17 +167,17 @@ export function ButtonPannel() {
           <Base/>
         </Button>
 
-        <Button onClick={()=>setTransformable(false)} title='Emboss'  >
+        <Button onClick={()=>setTransformable(false)} disabled={loading} title='Emboss'  >
           <Emboss fontSize="small" style={{color:'#23ABD5'}}/>
         </Button>
 
         <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
 
-        <Button onClick={()=>setTransformable(false)} title='Undo' >
+        <Button onClick={()=>setTransformable(false)} disabled={loading} title='Undo' >
           <Undo fontSize="small" style={{color:'#23ABD5'}}/>
         </Button>
 
-        <Button onClick={()=>setTransformable(false)} title='Redo' >
+        <Button onClick={()=>setTransformable(false)} disabled={true} title='Redo' >
           <Redo fontSize="small" style={{color:'#23ABD5'}}/>
         </Button>
 

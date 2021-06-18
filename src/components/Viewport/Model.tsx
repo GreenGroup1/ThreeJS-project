@@ -15,6 +15,7 @@ export const Model = () => {
   const [ needsUpdate, setNeedsUpdate ] = useRecoilState(atoms.needsUpdate)
   const [ coordinate, setCoordinate ] = useRecoilState(atoms.transformCoordinate)
   const [ cursor, setCursor ] = useRecoilState(atoms.cursor)
+  const [ loading, setLoading ] = useRecoilState(atoms.loading)
 
   const { transform, geometryRef, orbit, modelRef } = useContext(ModelContext)
   const { gl, scene, camera, size } = useThree()
@@ -51,7 +52,9 @@ export const Model = () => {
       ref={transform} size={0.6} space={coordinate}>
       <mesh 
         ref={modelRef} 
-        onClick={()=>{setTransformable(true)}}
+        onClick={()=>{
+          if(!loading) setTransformable(true)
+        }}
         // onPointerEnter={()=>setCursor('pointer')} 
         // onPointerLeave={()=>setCursor('')}
         geometry={geometryRef.current} 
