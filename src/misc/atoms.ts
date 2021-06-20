@@ -55,3 +55,13 @@ export const cursor = atom({
   key: 'cursor',
   default: ''
 })
+
+export const selected = atom({
+  key: 'seleted',
+  default: 'model' as 'model'|'text'
+})
+
+export const text = atom({
+  key: 'text',
+  default: 'test'
+})

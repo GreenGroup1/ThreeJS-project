@@ -1,20 +1,15 @@
 import fileDialog from 'file-dialog'
 import { atoms } from "misc"
+import { BufferAttribute, Float32BufferAttribute } from 'three'
 import { STLLoader } from "three-stdlib"
 import { useRecoilState } from 'recoil'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
 import { v4 as uuid} from 'uuid'
-import { ReactNode, useContext } from 'react'
+import { useContext } from 'react'
 import { ModelContext } from 'context'
-import { IconButton, Button as ButtonRegular, makeStyles, Divider, ExtendButtonBase, ButtonTypeMap, ButtonProps } from '@material-ui/core'
-
+import { Button as ButtonRegular, makeStyles, Divider, ButtonProps } from '@material-ui/core'
 import { ReactComponent as Base } from 'assets/icons/base.svg'
-import { ReactComponent as EmbossOld } from 'assets/icons/emboss.svg'
-import { ReactComponent as ExportOld } from 'assets/icons/export.svg'
-import { ReactComponent as ImportOld } from 'assets/icons/import.svg'
-import { ReactComponent as TranslateOld } from 'assets/icons/position.svg'
 import { ReactComponent as Rotate } from 'assets/icons/rotate.svg'
-import { ReactComponent as Reset } from 'assets/icons/start_over.svg'
 import { ReactComponent as ZoomIn } from 'assets/icons/zoom_in.svg'
 import { ReactComponent as ZoomOut } from 'assets/icons/zoom_out.svg'
 import { 
@@ -26,6 +21,7 @@ import {
   Undo, Redo, Replay, 
   Public as World,  
   AllOut as Local } from '@material-ui/icons'
+import { CSG } from 'three-csg-ts'
 
 const useStyles = makeStyles(()=>({
   button: {
@@ -33,6 +29,23 @@ const useStyles = makeStyles(()=>({
     height: '3rem'
   }
 }))
+
+function download(file:File, filename:string) {
+  if (window.navigator.msSaveOrOpenBlob) // IE10+
+      window.navigator.msSaveOrOpenBlob(file, filename);
+  else {
+      var a = document.createElement("a"),
+              url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);  
+      }, 0); 
+  }
+}
 
 function Button(props:ButtonProps<'button'>){
   const classes = useStyles()
@@ -59,29 +72,12 @@ export function ButtonPannel() {
   const [ coordinate, setCoordinate ] = useRecoilState(atoms.transformCoordinate)
   const [ zoom, setZoom ] = useRecoilState(atoms.zoom)
   const [ nextZoom, setNextZoom ] = useRecoilState(atoms.nextZoom)
-  const { geometryRef, modelRef, transform, orbit } = useContext(ModelContext)
-  const [,setViewport] = useRecoilState(atoms.viewport)
+  const { geometryRef, modelRef, transform, orbit, textRef } = useContext(ModelContext)
+  const [ ,setViewport] = useRecoilState(atoms.viewport)
   const [ needsUpdate, setNeedsUpdate ] = useRecoilState(atoms.needsUpdate)
   const [ loading, setLoading ] = useRecoilState(atoms.loading)
   const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
-
-  function download(file:File, filename:string) {
-    // var file = new Blob([data], {type: type});
-    if (window.navigator.msSaveOrOpenBlob) // IE10+
-        window.navigator.msSaveOrOpenBlob(file, filename);
-    else { // Others
-        var a = document.createElement("a"),
-                url = URL.createObjectURL(file);
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(function() {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);  
-        }, 0); 
-    }
-  }
+  const [ text, setText ] = useRecoilState(atoms.text)
 
   return <div style={{
     position:'absolute', 
@@ -97,13 +93,26 @@ export function ButtonPannel() {
             setTransformable(false)
             const dialog = await fileDialog()
             const buffer = await dialog[0].arrayBuffer()
-            const geometry = new STLLoader().parse(buffer)
-            // const merged = mergeVertices(geometry, 0.05)
-            geometryRef.current= geometry
+            const bufferGeometry = new STLLoader().parse(buffer)
+            bufferGeometry.computeVertexNormals()
+            bufferGeometry.computeTangents()
+            bufferGeometry.computeBoundingBox()
+            const count = bufferGeometry.attributes.position.count
+            console.log(count, new Array(count).map((v,i)=>[i/(count+1), (i+1)/(count+1)]).flat())
+            const array = new Float32Array(count*2)
+            new Array(count).map((v,i)=>[i/(count+1), (i+1)/(count+1)]).flat().forEach((v,i)=>{array[i]=v})
+
+            bufferGeometry.setAttribute(
+              'uv', 
+              new BufferAttribute(
+                array, 
+              2))
+            
+            geometryRef.current= bufferGeometry
             setModel(dialog[0].name)
             setNeedsUpdate(true)
             console.log(dialog[0].name)
-            console.log(geometry)
+            console.log(bufferGeometry)
         }}>
           <Import style={{color:'#23ABD5'}}/>
         </Button>
@@ -195,7 +204,24 @@ export function ButtonPannel() {
           <Base/>
         </Button>
 
-        <Button onClick={()=>setTransformable(false)} disabled={loading} title='Emboss'  >
+        <Button onClick={()=>{
+          setTransformable(false)
+          if(modelRef.current && textRef.current){
+            console.log(modelRef.current,textRef.current)
+            modelRef.current.updateMatrix();
+            textRef.current.updateMatrix();
+            
+            //@ts-ignore
+            const meshResult = CSG.union(modelRef.current, textRef.current)
+            console.log(meshResult)
+            modelRef.current=meshResult
+            modelRef.current.updateMatrix()
+
+            setText('')
+            textRef.current=undefined
+            setNeedsUpdate(true)
+          }
+        }} disabled={loading} title='Emboss'  >
           <Emboss fontSize="small" style={{color:'#23ABD5'}}/>
         </Button>
 
@@ -213,6 +239,8 @@ export function ButtonPannel() {
           setTransformable(false)
           modelRef.current=undefined
           geometryRef.current=undefined
+          textRef.current=undefined
+
           setNeedsUpdate(true)
           setLoading(false)
         }} title='Start over' >
