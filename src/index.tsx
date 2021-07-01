@@ -4,39 +4,58 @@ import App from './App'
 import { RecoilRoot } from 'recoil'
 import reportWebVitals from './reportWebVitals'
 import Context from 'context'
-import { unstable_createMuiStrictModeTheme, ThemeProvider } from '@material-ui/core'
+import { auth, theme } from 'misc'
+import { ThemeProvider } from '@material-ui/core'
+import { onError } from '@apollo/client/link/error'
+import { setContext } from '@apollo/client/link/context';
+import { ApolloClient, ApolloProvider, createHttpLink, InMemoryCache } from '@apollo/client'
+import { BrowserRouter as Router } from "react-router-dom";
 
-const theme = unstable_createMuiStrictModeTheme({
-  palette:{
-    primary:{
-      main: '#24242c'
-    },
-    secondary:{
-      main:  '#2f2f38'
-    }
-  },
-  overrides:{
-    MuiButton:{
-      root:{
-        minWidth:'2rem'
-      },
-      label:{
-        padding: 0,
-        margin:0
-      }
-    }
-  }
-})
+const logoutLink = onError(({ networkError }) => {
+  if ( 
+     networkError &&
+     'statusCode' in networkError &&
+     networkError.statusCode === 401
+   ) { auth.logout() };
+ })
+ 
+ const httpLink = createHttpLink({
+   uri: 'https://api.dentalmodelmaker.com/hasura/v1/graphql',
+ });
+ 
+ const authLink = setContext((_, { headers }) => {
+   const jwtToken = auth.getJWTToken();
+   if (jwtToken) {
+       return {
+           headers: {
+               ...headers,
+               Authorization: `Bearer ${jwtToken}`
+           }
+       }
+   }
+   return headers
+ });
+ 
+ export const client = new ApolloClient({
+   link: logoutLink.concat(authLink.concat(httpLink)),
+   cache: new InMemoryCache({
+     addTypename: false
+   }),
+ });
 
 ReactDOM.render(
   <React.StrictMode>
-    <ThemeProvider  {...{theme}}>
-      <RecoilRoot>
-        <Context>
-          <App />
-        </Context>
-      </RecoilRoot>
-    </ThemeProvider>
+    <Router>
+      <ThemeProvider  {...{theme}}>
+        <RecoilRoot>
+          <Context>
+            <ApolloProvider client={client}>
+              <App />
+            </ApolloProvider>
+          </Context>
+        </RecoilRoot>
+      </ThemeProvider>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 )

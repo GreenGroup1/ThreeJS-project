@@ -1,0 +1,22 @@
+overwrite: true
+schema: 
+  - "https://api.dentalmodelmaker.com/hasura/v1/graphql":
+      headers:
+        X-Hasura-Admin-Secret: ${HASURA_ADMIN}
+        X-Hasura-Role: user
+documents: 
+  - 'src/**/*.graphql'
+generates:
+  src/generated/graphql.tsx:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+      - "typescript-apollo-client-helpers"
+      - "fragment-matcher"
+    config:
+      withHooks: true
+      withMutationFn: true
+      reactApolloVersion: 3
+      skipTypeNameForRoot: true
+      skipTypename: true

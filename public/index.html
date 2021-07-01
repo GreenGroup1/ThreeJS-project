@@ -40,6 +40,31 @@
       font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
         monospace;
     }
+    
+    .custom-popup{
+      opacity:0.95;
+      font: 10px Helvetica;
+      max-width: fit-content;
+      max-height: none;
+    }
+    .mapboxgl-popup-content {
+      overflow: hidden;
+      z-index: 2;
+      display: 'block';
+      background-color:#eeeeee;
+      opacity: 0.85;
+      box-shadow: -15px 15px 15px rgba(0,0,0,0.2);
+      text-align: left;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    html {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
 
   </style>
   <body>

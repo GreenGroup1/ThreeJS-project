@@ -1,5 +1,6 @@
+import { Maybe, Users } from 'generated'
 import { atom } from 'recoil'
-import { defaultPosition, ViewportProps } from "./types"
+import { defaultPosition, ViewportProps } from "../types"
 
 export const model = atom({
   key: 'model',
@@ -65,3 +66,8 @@ export const text = atom({
   key: 'text',
   default: 'test'
 })
+
+export const user = atom({
+  key: 'user',
+  default: undefined as Maybe<Pick<Users, "id" | "avatar_url" | "created_at" | "display_name">> | undefined,
+});

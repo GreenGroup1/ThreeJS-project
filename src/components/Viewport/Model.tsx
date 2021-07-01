@@ -78,7 +78,7 @@ export const Model = () => {
       geometry={geometryRef.current} 
       position={[0, 0, 0]} 
       scale={[1, 1, 1]}>
-        <meshLambertMaterial attach="material" color="#999" side={DoubleSide} />
+        <meshLambertMaterial attach="material" color="#cc7357" side={DoubleSide} />
     </mesh>
   </TransformControls>
   <TransformControls 
@@ -97,8 +97,8 @@ export const Model = () => {
         setSelected('text')
         setTransformable(true)
       }}>
-          <textGeometry attach='geometry' args={[text, {font, size: 12, height: 12}]} />
-          <meshStandardMaterial attach='material' />
+          <textGeometry attach='geometry' args={[text, {font, size: 9, height: 12}]} />
+          <meshLambertMaterial attach="material" color="#999" side={DoubleSide} />
     </mesh>
   </TransformControls>
 

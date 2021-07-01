@@ -1,5 +1,5 @@
 import fileDialog from 'file-dialog'
-import { atoms } from "misc"
+import { atoms, auth } from "misc"
 import { BufferAttribute, Float32BufferAttribute } from 'three'
 import { STLLoader } from "three-stdlib"
 import { useRecoilState } from 'recoil'
@@ -7,7 +7,8 @@ import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
 import { v4 as uuid} from 'uuid'
 import { useContext } from 'react'
 import { ModelContext } from 'context'
-import { Button as ButtonRegular, makeStyles, Divider, ButtonProps } from '@material-ui/core'
+import { Button as ButtonRegular, Divider, ButtonProps, ListItemAvatar, Avatar } from '@material-ui/core'
+import { makeStyles } from '@material-ui/styles'
 import { ReactComponent as Base } from 'assets/icons/base.svg'
 import { ReactComponent as Rotate } from 'assets/icons/rotate.svg'
 import { ReactComponent as ZoomIn } from 'assets/icons/zoom_in.svg'
@@ -20,7 +21,9 @@ import {
   PhotoSizeSelectSmall as Scale, 
   Undo, Redo, Replay, 
   Public as World,  
-  AllOut as Local } from '@material-ui/icons'
+  AllOut as Local, 
+  ExitToApp,
+  AccountCircle} from '@material-ui/icons'
 import { CSG } from 'three-csg-ts'
 
 const useStyles = makeStyles(()=>({
@@ -78,184 +81,215 @@ export function ButtonPannel() {
   const [ loading, setLoading ] = useRecoilState(atoms.loading)
   const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
   const [ text, setText ] = useRecoilState(atoms.text)
+  const [ user, setUser ] = useRecoilState(atoms.user)
 
-  return <div style={{
-    position:'absolute', 
-    top:0,
-    padding: '0.25rem',
-    // border: 'solid rgba(0,0,0,0.2) 1px',
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor:'#24242c'
-  }}>
-        
-        <Button title='Import' disabled={loading} onClick={async () => {
-            setTransformable(false)
-            const dialog = await fileDialog()
-            const buffer = await dialog[0].arrayBuffer()
-            const bufferGeometry = new STLLoader().parse(buffer)
-            bufferGeometry.computeVertexNormals()
-            bufferGeometry.computeTangents()
-            bufferGeometry.computeBoundingBox()
-            const count = bufferGeometry.attributes.position.count
-            console.log(count, new Array(count).map((v,i)=>[i/(count+1), (i+1)/(count+1)]).flat())
-            const array = new Float32Array(count*2)
-            new Array(count).map((v,i)=>[i/(count+1), (i+1)/(count+1)]).flat().forEach((v,i)=>{array[i]=v})
+  return <div style={{position:'absolute', top:0,bottom:0,overflowY:'scroll', minWidth:'4rem'}}>
+      <div style={{
+        position:'absolute', 
+        top:0,
+        padding: '0.25rem',
+        // border: 'solid rgba(0,0,0,0.2) 1px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent:'space-between',
+        backgroundColor:'#24242c',
+        minHeight:'calc(100% - 0.5rem)'
+      }}>
+        <div style={{display: 'flex',flexDirection: 'column'}}>
+          <Button title='Import' disabled={loading} onClick={async () => {
+              setTransformable(false)
+              const dialog = await fileDialog()
+              const buffer = await dialog[0].arrayBuffer()
+              const bufferGeometry = new STLLoader().parse(buffer)
+              bufferGeometry.computeVertexNormals()
+              bufferGeometry.computeTangents()
+              bufferGeometry.computeBoundingBox()
+              const count = bufferGeometry.attributes.position.count
+              console.log(count, new Array(count).map((v,i)=>[i/(count+1), (i+1)/(count+1)]).flat())
+              const array = new Float32Array(count*2)
+              new Array(count).map((v,i)=>[i/(count+1), (i+1)/(count+1)]).flat().forEach((v,i)=>{array[i]=v})
 
-            bufferGeometry.setAttribute(
-              'uv', 
-              new BufferAttribute(
-                array, 
-              2))
-            
-            geometryRef.current= bufferGeometry
-            setModel(dialog[0].name)
-            setNeedsUpdate(true)
-            console.log(dialog[0].name)
-            console.log(bufferGeometry)
-        }}>
-          <Import style={{color:'#23ABD5'}}/>
-        </Button>
-        
-        <Button onClick={()=>{
-          if(modelRef.current){
-            setTransformable(false)
-            const exporter = new STLExporter()
-            const stlFormatted = exporter.parse(modelRef.current, {binary:true})
-            console.log(stlFormatted, origin)
-            const file = new File([stlFormatted],`${uuid()}.stl`, {type: "model/stl"})    
-            console.log(new Date().toJSON().slice(0,10))
-            download(file,`model.stl`)
-          }
-        }} disabled={loading} title='Export' >
-          <Export style={{color:'#23ABD5'}}/>
-        </Button>
+              bufferGeometry.setAttribute(
+                'uv', 
+                new BufferAttribute(
+                  array, 
+                2))
+              
+              geometryRef.current= bufferGeometry
+              setModel(dialog[0].name)
+              setNeedsUpdate(true)
+              console.log(dialog[0].name)
+              console.log(bufferGeometry)
+          }}>
+            <Import style={{color:'#23ABD5'}}/>
+          </Button>
+          
+          <Button onClick={()=>{
+            if(modelRef.current){
+              setTransformable(false)
+              const exporter = new STLExporter()
+              const stlFormatted = exporter.parse(modelRef.current, {binary:true})
+              console.log(stlFormatted, origin)
+              const file = new File([stlFormatted],`${uuid()}.stl`, {type: "model/stl"})    
+              console.log(new Date().toJSON().slice(0,10))
+              download(file,`model.stl`)
+            }
+          }} disabled={loading} title='Export' >
+            <Export style={{color:'#23ABD5'}}/>
+          </Button>
 
-        <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
+          <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
 
-        <Button title='Translate' disabled={loading} onClick={()=>{
-          setMode('translate')
-        }}>
-          <Arrows fontSize='small' style={{color:'#23ABD5', transform:'rotate(45deg)'}}/>
-        </Button>
+          <Button title='Translate' disabled={loading} onClick={()=>{
+            setMode('translate')
+          }}>
+            <Arrows fontSize='small' style={{color:'#23ABD5', transform:'rotate(45deg)'}}/>
+          </Button>
 
-        <Button title='Rotate' disabled={loading}  onClick={()=>{
-          setMode('rotate')
-        }}>
-          <Rotate/>
-        </Button>
+          <Button title='Rotate' disabled={loading}  onClick={()=>{
+            setMode('rotate')
+          }}>
+            <Rotate/>
+          </Button>
 
-        <Button title='Scale' disabled={loading} onClick={()=>{
-          setMode('scale')
-        }}>
-          <Scale style={{color:'#23ABD5'}}/>
-        </Button>
+          <Button title='Scale' disabled={loading} onClick={()=>{
+            setMode('scale')
+          }}>
+            <Scale style={{color:'#23ABD5'}}/>
+          </Button>
 
-        <Button title='Transformation coordinates' disabled={loading} onClick={()=>{
-          if(!transformable) setTransformable(true)
-          setCoordinate(prev=>prev==='world'?'local':'world')
-        }}>
-          {coordinate==='world'? 
-            <World style={{color:'#23ABD5'}}/>:
-            <Local style={{color:'#23ABD5'}}/>}
-        </Button>
+          <Button title='Transformation coordinates' disabled={loading} onClick={()=>{
+            if(!transformable) setTransformable(true)
+            setCoordinate(prev=>prev==='world'?'local':'world')
+          }}>
+            {coordinate==='world'? 
+              <World style={{color:'#23ABD5'}}/>:
+              <Local style={{color:'#23ABD5'}}/>}
+          </Button>
 
-        <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
+          <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
 
-        <Button title='Solidify' disabled={loading}  onClick={()=>{
-          if(model && modelRef.current){
-            setTransformable(false)
-            setLoading(true)
-            const exporter = new STLExporter()
-            const stlFormatted = exporter.parse(modelRef.current, {binary:true})
-            console.log(stlFormatted, origin)
-            const file = new File([stlFormatted],`${uuid()}.stl`, {type: "model/stl"})    
-            const formData  = new FormData()     
-            formData.append('file', file, `${uuid()}.stl`)
-            fetch(origin==='http://localhost:3000'?'http://localhost:5000/':'https://edit.dentalmodelmaker.com/', { 
-              method: 'POST',
-              body: formData,
-            }).then(
-              response => response.arrayBuffer()
-            ).then(
-              success => {
-                const geometry = new STLLoader().parse(success)
-                geometryRef.current=geometry  
-                //transform.current?.children[0].object.rotation.set(0,0,0)
-                //@ts-ignore
-                if(modelRef.current) {
-                  const { object:{ rotation:{x,y,z} } } = transform.current?.children[0] as unknown as {object:{rotation:{x:number,y:number,z:number}}}
-                  const {x:cx,y:cy,z:cz} = modelRef.current.rotation
-                  modelRef.current.updateMatrix()
-                  modelRef.current.rotation.set(cx-x,cy-y,cz-z)
-                  setNeedsUpdate(true)
-                  modelRef.current.updateMatrix()
+          <Button title='Solidify' disabled={loading}  onClick={()=>{
+            if(model && modelRef.current){
+              setTransformable(false)
+              setLoading(true)
+              const exporter = new STLExporter()
+              const stlFormatted = exporter.parse(modelRef.current, {binary:true})
+              console.log(stlFormatted, origin)
+              const file = new File([stlFormatted],`${uuid()}.stl`, {type: "model/stl"})    
+              const formData  = new FormData()     
+              formData.append('file', file, `${uuid()}.stl`)
+              fetch(origin==='http://localhost:3000'?'http://127.0.0.1:5000/':'https://edit.dentalmodelmaker.com/', { 
+                method: 'POST',
+                body: formData,
+              }).then(
+                response => response.arrayBuffer()
+              ).then(
+                success => {
+                  const geometry = new STLLoader().parse(success)
+                  geometryRef.current=geometry  
+                  //transform.current?.children[0].object.rotation.set(0,0,0)
+                  //@ts-ignore
+                  if(modelRef.current) {
+                    const { object:{ rotation:{x,y,z} } } = transform.current?.children[0] as unknown as {object:{rotation:{x:number,y:number,z:number}}}
+                    const {x:cx,y:cy,z:cz} = modelRef.current.rotation
+                    modelRef.current.updateMatrix()
+                    modelRef.current.rotation.set(cx-x,cy-y,cz-z)
+                    setNeedsUpdate(true)
+                    modelRef.current.updateMatrix()
+                    setLoading(false)
+                  }
+                }
+              ).catch(
+                error => {
+                  console.log(error)
                   setLoading(false)
                 }
-              }
-            ).catch(
-              error => {
-                console.log(error)
-                setLoading(false)
-              }
-            );
-          }
-        }}>
-          <Base/>
-        </Button>
+              );
+            }
+          }}>
+            <Base/>
+          </Button>
 
-        <Button onClick={()=>{
-          setTransformable(false)
-          if(modelRef.current && textRef.current){
-            console.log(modelRef.current,textRef.current)
-            modelRef.current.updateMatrix();
-            textRef.current.updateMatrix();
-            
-            //@ts-ignore
-            const meshResult = CSG.union(modelRef.current, textRef.current)
-            console.log(meshResult)
-            modelRef.current=meshResult
-            modelRef.current.updateMatrix()
+          <Button onClick={()=>{
+            setTransformable(false)
+            if(modelRef.current && textRef.current){
+              console.log(modelRef.current,textRef.current)
+              modelRef.current.updateMatrix();
+              textRef.current.updateMatrix();
+              const bufferGeometry = modelRef.current.geometry
+              bufferGeometry.computeVertexNormals()
+              bufferGeometry.computeBoundingBox()
+              const count = bufferGeometry.attributes.position.count
+              const array = new Float32Array(count*2)
+              new Array(count)
+                .map((v,i)=>[i/(count+1), (i+1)/(count+1)])
+                .flat()
+                .forEach((v,i)=>{array[i]=v})
 
-            setText('')
+              bufferGeometry.setAttribute(
+                'uv', 
+                new BufferAttribute(array, 2)
+              )
+
+              //@ts-ignore
+              const meshResult = CSG.union(modelRef.current, textRef.current)
+              console.log(meshResult,modelRef.current, textRef.current)
+              modelRef.current=meshResult
+              modelRef.current.updateMatrix()
+              setNeedsUpdate(true)
+
+              setText('')
+              textRef.current=undefined
+            }
+          }} disabled={loading} title='Emboss'  >
+            <Emboss fontSize="small" style={{color:'#23ABD5'}}/>
+          </Button>
+
+          <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
+
+          <Button onClick={()=>setTransformable(false)} disabled={loading} title='Undo' >
+            <Undo fontSize="small" style={{color:'#23ABD5'}}/>
+          </Button>
+
+          <Button onClick={()=>setTransformable(false)} disabled={true} title='Redo' >
+            <Redo fontSize="small" style={{color:'#23ABD5'}}/>
+          </Button>
+
+          <Button onClick={()=>{
+            setTransformable(false)
+            modelRef.current=undefined
+            geometryRef.current=undefined
             textRef.current=undefined
+
             setNeedsUpdate(true)
-          }
-        }} disabled={loading} title='Emboss'  >
-          <Emboss fontSize="small" style={{color:'#23ABD5'}}/>
-        </Button>
+            setLoading(false)
+          }} title='Start over' >
+            <Replay fontSize="small" style={{color:'#23ABD5'}}/>
+          </Button>
 
-        <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
+          <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
+          
+          <Button title='Zoom In'  onClick={()=>{console.log('zoom in'); setNextZoom(zoom*2)}}>
+          <ZoomIn/>
+          </Button>
 
-        <Button onClick={()=>setTransformable(false)} disabled={loading} title='Undo' >
-          <Undo fontSize="small" style={{color:'#23ABD5'}}/>
-        </Button>
+          <Button title='Zoom Out'  onClick={()=>{console.log('zoom out'); setNextZoom(zoom*0.5)}}>
+            <ZoomOut/>
+          </Button>
+          <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
 
-        <Button onClick={()=>setTransformable(false)} disabled={true} title='Redo' >
-          <Redo fontSize="small" style={{color:'#23ABD5'}}/>
-        </Button>
-
-        <Button onClick={()=>{
-          setTransformable(false)
-          modelRef.current=undefined
-          geometryRef.current=undefined
-          textRef.current=undefined
-
-          setNeedsUpdate(true)
-          setLoading(false)
-        }} title='Start over' >
-          <Replay fontSize="small" style={{color:'#23ABD5'}}/>
-        </Button>
-
-        <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
-        
-        <Button title='Zoom In'  onClick={()=>{console.log('zoom in'); setNextZoom(zoom*2)}}>
-         <ZoomIn/>
-        </Button>
-
-        <Button title='Zoom Out'  onClick={()=>{console.log('zoom out'); setNextZoom(zoom*0.5)}}>
-          <ZoomOut/>
-        </Button>
-
+        </div>
+        <div>
+            
+          <Avatar style={{maxWidth:'2rem', maxHeight:'2rem', margin:'1rem auto 1rem auto',}} alt={user?.display_name||'User'} src={user?.avatar_url||''} >
+            {(user?.display_name||'User').split(' ').map(l=>l.slice(0,1).toUpperCase()).join('')}
+          </Avatar>
+            
+          <Button title='Log out'  onClick={()=>{auth.logout()}}>
+            <ExitToApp/>
+          </Button>
+        </div>
     </div>
+  </div>
 }
