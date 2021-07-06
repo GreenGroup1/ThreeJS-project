@@ -25,6 +25,7 @@ import {
   ExitToApp,
   AccountCircle} from '@material-ui/icons'
 import { CSG } from 'three-csg-ts'
+import { deflate, gzip, deflateRaw } from 'pako'
 
 const useStyles = makeStyles(()=>({
   button: {
@@ -49,6 +50,7 @@ function download(file:File, filename:string) {
       }, 0); 
   }
 }
+
 
 function Button(props:ButtonProps<'button'>){
   const classes = useStyles()
@@ -174,14 +176,21 @@ export function ButtonPannel() {
               setTransformable(false)
               setLoading(true)
               const exporter = new STLExporter()
-              const stlFormatted = exporter.parse(modelRef.current, {binary:true})
-              console.log(stlFormatted, origin)
-              const file = new File([stlFormatted],`${uuid()}.stl`, {type: "model/stl"})    
+              const stlFormatted = exporter.parse(modelRef.current, {binary:true}) as unknown as DataView
+              const uint8View = new Uint8Array(stlFormatted.buffer);
+              const compressed = gzip(uint8View)
+              const compressedFile = compressed.buffer
+
+              const file = new File([compressedFile],`${uuid()}.stl`, {type: "model/stl"})   
               const formData  = new FormData()     
               formData.append('file', file, `${uuid()}.stl`)
-              fetch(origin==='http://localhost:3000'?'http://127.0.0.1:5000/':'https://edit.dentalmodelmaker.com/', { 
+              console.log(stlFormatted, formData, compressed)
+              fetch(origin==='http://localhost:3000'?'http://127.0.0.1:5005?align=1':'https://edit.dentalmodelmaker.com?align=1', { 
                 method: 'POST',
                 body: formData,
+                headers: {
+                  'Content-Encoding': 'gzip'
+                }
               }).then(
                 response => response.arrayBuffer()
               ).then(
