@@ -153,12 +153,12 @@ export function ButtonPannel() {
           }}>
             <Rotate/>
           </Button>
-
+{/* 
           <Button title='Scale' disabled={loading} onClick={()=>{
             setMode('scale')
           }}>
             <Scale style={{color:'#23ABD5'}}/>
-          </Button>
+          </Button> */}
 
           <Button title='Transformation coordinates' disabled={loading} onClick={()=>{
             if(!transformable) setTransformable(true)
