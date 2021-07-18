@@ -1,33 +1,27 @@
 import { atoms, useKeyPress } from "misc"
-import { useEffect, useRef, useState } from "react"
-import { BufferAttribute, BufferGeometry,Vector3 as V3, DoubleSide, Event, Plane, Float32BufferAttribute, FontLoader, PlaneBufferGeometry, TextureLoader } from 'three'
+import { useEffect, useRef } from "react"
+import { Vector3 as V3, DoubleSide, Event, Plane, FontLoader } from 'three'
 import { useRecoilState } from 'recoil'
 import { OrbitControls } from "three-stdlib"
 import { TransformControls } from "./TransformControls"
 import { useContext } from "react"
 import { ModelContext } from "context"
-import { useFrame, useThree, Vector3 } from "@react-three/fiber"
+import { useFrame, useThree } from "@react-three/fiber"
 import Renner from 'assets/Renner.json'
-import Disk from 'assets/disc.png'
 
 export const Model = () => {
-  const [ model, setModel ] = useRecoilState(atoms.model)
-  const [ mode, setMode ] = useRecoilState(atoms.transformMode)
+  const [ model ] = useRecoilState(atoms.model)
+  const [ mode ] = useRecoilState(atoms.transformMode)
   const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
   const [ needsUpdate, setNeedsUpdate ] = useRecoilState(atoms.needsUpdate)
-  const [ coordinate, setCoordinate ] = useRecoilState(atoms.transformCoordinate)
-  const [ cursor, setCursor ] = useRecoilState(atoms.cursor)
-  const [ loading, setLoading ] = useRecoilState(atoms.loading)
+  const [ coordinate ] = useRecoilState(atoms.transformCoordinate)
+  const [ loading ] = useRecoilState(atoms.loading)
   const [ selected, setSelected ] = useRecoilState(atoms.selected)
-  const [ text, setText ] = useRecoilState(atoms.text)
   const planeRef = useRef<Plane|null>(new Plane( new V3( 0, - 1, 0 ), 0.8 ))
   const { transform, geometryRef, orbit, modelRef, textRef, textTransform } = useContext(ModelContext)
-  const { gl, scene, camera, size, raycaster } = useThree()
-  const [ deletionMode, setDeletionMode ] = useRecoilState(atoms.deletionMode)
+  const { gl, scene, camera } = useThree()
+  const [ deletionMode ] = useRecoilState(atoms.deletionMode)
   const mapRef = useRef<Uint32Array>()
-  const [faces, setFaces] = useState<Set<number>>(new Set())
-  const font = new FontLoader().parse(Renner);
-  const sprite = new TextureLoader().load( Disk );
   const dPress = useKeyPress('d')
 
   const flip = (obj:any) => Object.fromEntries(
@@ -114,28 +108,38 @@ export const Model = () => {
             <pointsMaterial {...{ flatShading:true,  size:2, transparent: true, opacity:0 }} />
     </points>
   </TransformControls>
-  <TransformControls 
-    showX={transformable&&selected==='text'}
-    showY={transformable&&selected==='text'}
-    showZ={transformable&&selected==='text'}
-    position={[-8,20,13]} 
-    rotation={[0,0,0]} 
-    // visible={selected!=='text'}
-    //@ts-ignore
-    ref={textTransform} size={0.6} space={coordinate}>
-    <mesh 
-      ref={textRef}  
-      onClick={()=>{
-        console.log('text')
-        setSelected('text')
-        setTransformable(true)
-      }}>
-          {/* <planeGeometry attach='geometry' args={[100,100]}/> */}
-          <textGeometry attach='geometry' args={[text, {font, size: 9, height: 12}]} />
-          <meshLambertMaterial attach="material" color="#999" side={DoubleSide} transparent={true} opacity={0.2}/>
-    </mesh>
-  </TransformControls>
-
   </>
 }
 
+function Texts () {
+  const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
+  const [ coordinate, setCoordinate ] = useRecoilState(atoms.transformCoordinate)
+  const [ selected, setSelected ] = useRecoilState(atoms.selected)
+  const [ text, setText ] = useRecoilState(atoms.text)
+  const { textRef, textTransform } = useContext(ModelContext)
+  const font = new FontLoader().parse(Renner);
+
+  return  <>
+    <TransformControls 
+      showX={transformable&&selected==='text'}
+      showY={transformable&&selected==='text'}
+      showZ={transformable&&selected==='text'}
+      position={[-8,20,13]} 
+      rotation={[0,0,0]} 
+      // visible={selected!=='text'}
+      //@ts-ignore
+      ref={textTransform} size={0.6} space={coordinate}>
+      <mesh 
+        ref={textRef}  
+        onClick={()=>{
+          console.log('text')
+          setSelected('text')
+          setTransformable(true)
+        }}>
+            {/* <planeGeometry attach='geometry' args={[100,100]}/> */}
+            <textGeometry attach='geometry' args={[text, {font, size: 9, height: 12}]} />
+            <meshLambertMaterial attach="material" color="#999" side={DoubleSide} transparent={true} opacity={0.2}/>
+      </mesh>
+    </TransformControls>
+</>
+}
