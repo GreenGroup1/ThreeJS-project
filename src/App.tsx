@@ -13,10 +13,11 @@ import { useHistory } from "react-router-dom"
 export default function App () {
   const [ loading, setLoading ] = useRecoilState(atoms.loading)
   const [ user, setUser ] = useRecoilState(atoms.user)
+
   const [ getUser, { data: userData } ] = useUserLazyQuery()
   const client = useApolloClient()
   const history = useHistory()
-  
+
   useEffect(()=>{
     if(userData){
       setUser(userData?.users_by_pk)
@@ -37,6 +38,7 @@ export default function App () {
         client.resetStore()
       }
     });
+
   },[])
 
   return <>

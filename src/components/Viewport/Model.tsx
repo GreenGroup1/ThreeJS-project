@@ -1,13 +1,14 @@
-import { atoms } from "misc"
-import { useEffect } from "react"
-import { DoubleSide, Event, FontLoader } from 'three'
+import { atoms, useKeyPress } from "misc"
+import { useEffect, useRef, useState } from "react"
+import { BufferAttribute, BufferGeometry,Vector3 as V3, DoubleSide, Event, Plane, Float32BufferAttribute, FontLoader, PlaneBufferGeometry, TextureLoader } from 'three'
 import { useRecoilState } from 'recoil'
 import { OrbitControls } from "three-stdlib"
 import { TransformControls } from "./TransformControls"
 import { useContext } from "react"
 import { ModelContext } from "context"
-import { useFrame, useThree } from "@react-three/fiber"
+import { useFrame, useThree, Vector3 } from "@react-three/fiber"
 import Renner from 'assets/Renner.json'
+import Disk from 'assets/disc.png'
 
 export const Model = () => {
   const [ model, setModel ] = useRecoilState(atoms.model)
@@ -19,12 +20,37 @@ export const Model = () => {
   const [ loading, setLoading ] = useRecoilState(atoms.loading)
   const [ selected, setSelected ] = useRecoilState(atoms.selected)
   const [ text, setText ] = useRecoilState(atoms.text)
-
+  const planeRef = useRef<Plane|null>(new Plane( new V3( 0, - 1, 0 ), 0.8 ))
   const { transform, geometryRef, orbit, modelRef, textRef, textTransform } = useContext(ModelContext)
-  const { gl, scene, camera, size } = useThree()
-  console.log(transform.current)
-
+  const { gl, scene, camera, size, raycaster } = useThree()
+  const [ deletionMode, setDeletionMode ] = useRecoilState(atoms.deletionMode)
+  const mapRef = useRef<Uint32Array>()
+  const [faces, setFaces] = useState<Set<number>>(new Set())
   const font = new FontLoader().parse(Renner);
+  const sprite = new TextureLoader().load( Disk );
+  const dPress = useKeyPress('d')
+
+  const flip = (obj:any) => Object.fromEntries(
+    Object.entries(obj)
+      .map(([k, v]) => [v, Number(k)])
+      .filter((v,k)=>k && k!==-1)
+  )
+
+  if(geometryRef?.current?.index?.array && !mapRef.current){
+    mapRef.current = flip(geometryRef?.current?.index?.array)
+  }
+
+  function deleteFace(ind:number){
+    if(geometryRef?.current?.index && deletionMode){
+      //@ts-ignore
+      geometryRef.current.index.array[Math.floor((ind||0) * 3)] = 0
+      //@ts-ignore
+      geometryRef.current.index.array[Math.floor((ind||0) * 3)+1] = 0
+      //@ts-ignore
+      geometryRef.current.index.array[Math.floor((ind||0) * 3)+2] = 0
+      geometryRef.current.index.needsUpdate = true;
+    }
+  }
 
   useFrame(()=>{
     if(needsUpdate){
@@ -51,7 +77,7 @@ export const Model = () => {
       return () => controls.removeEventListener("dragging-changed", callback)
     }
   })
-
+  
   if ((!model) || (!geometryRef.current)) {
     return null
   }
@@ -73,13 +99,20 @@ export const Model = () => {
           setTransformable(true)
         }
       }}
-      // onPointerEnter={()=>setCursor('pointer')} 
-      // onPointerLeave={()=>setCursor('')}
       geometry={geometryRef.current} 
       position={[0, 0, 0]} 
       scale={[1, 1, 1]}>
-        <meshLambertMaterial attach="material" color="#cc7357" side={DoubleSide} />
+        <meshStandardMaterial clippingPlanes={[ planeRef.current ]} clipShadows={true} needsUpdate={true} attach="material" color="#cc7357" side={DoubleSide} />
+
     </mesh>
+    <points onPointerMove={(e) =>{
+        if(dPress && geometryRef?.current?.index && deletionMode && e.index && mapRef.current){
+          const ind = mapRef.current[e.index]
+          deleteFace(Math.trunc(ind/3))
+        }
+    }} geometry={geometryRef.current}>
+            <pointsMaterial {...{ flatShading:true,  size:2, transparent: true, opacity:0 }} />
+    </points>
   </TransformControls>
   <TransformControls 
     showX={transformable&&selected==='text'}
@@ -97,8 +130,9 @@ export const Model = () => {
         setSelected('text')
         setTransformable(true)
       }}>
+          {/* <planeGeometry attach='geometry' args={[100,100]}/> */}
           <textGeometry attach='geometry' args={[text, {font, size: 9, height: 12}]} />
-          <meshLambertMaterial attach="material" color="#999" side={DoubleSide} />
+          <meshLambertMaterial attach="material" color="#999" side={DoubleSide} transparent={true} opacity={0.2}/>
     </mesh>
   </TransformControls>
 

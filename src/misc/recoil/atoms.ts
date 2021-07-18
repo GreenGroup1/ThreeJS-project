@@ -71,3 +71,14 @@ export const user = atom({
   key: 'user',
   default: undefined as Maybe<Pick<Users, "id" | "avatar_url" | "created_at" | "display_name">> | undefined,
 });
+
+
+export const deletionMode = atom({
+  key: 'deletionMode',
+  default: false
+});
+
+export const keysPressed = atom({
+  key: 'keysPressed',
+  default: {ctrl:false} as {[key:string]:boolean}
+});

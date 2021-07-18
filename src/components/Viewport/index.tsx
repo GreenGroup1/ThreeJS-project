@@ -2,13 +2,13 @@ import { Canvas } from '@react-three/fiber'
 import { Model } from "./Model"
 import { OrbitControls } from "@react-three/drei"
 import { useRecoilBridgeAcrossReactRoots_UNSTABLE, useRecoilState } from "recoil"
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Viewcube from './Viewcube'
 import Navigate from './Navigate'
 import { ModelContext } from 'context'
 import { useContext } from 'react'
-import { ACESFilmicToneMapping, Color, sRGBEncoding } from 'three'
-import { atoms } from 'misc'
+import { ACESFilmicToneMapping, Color, Raycaster, sRGBEncoding } from 'three'
+import { atoms, useKeyPress } from 'misc'
 
 export const ModelView = () => {
   const RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE()
@@ -16,13 +16,24 @@ export const ModelView = () => {
   const { orbit } = useContext(ModelContext)
   const [ cursor, setCursor ] = useRecoilState(atoms.cursor)
   const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
-
+  const raycaster = useRef(new Raycaster())
+  const dPress = useKeyPress('d')
+  
+  useEffect(()=>{
+    if(raycaster.current.params.Points){
+      console.log('set threshold')
+      raycaster.current.params.Points.threshold = 0.8;
+      raycaster.current.params.Sprite.threshold = 0.8;
+    }
+  },[])
+  
   return <div style={{position:'absolute', height:'100%', width:'100%'}}>
     <ModelContext.Consumer>
       {value=>(
         <Canvas 
           shadows
           color='black'
+          raycaster={raycaster.current}
           dpr={window.devicePixelRatio*1}
           camera={{
             position:[600,800,600]
@@ -32,7 +43,7 @@ export const ModelView = () => {
             gl.outputEncoding = sRGBEncoding
             scene.background = new Color('#373740')
           }}
-          style={{cursor}}
+          style={{cursor: dPress?'crosshair':''}}
           onPointerMissed={()=>setTransformable(false)}
         >
           <ModelContext.Provider value={value}>

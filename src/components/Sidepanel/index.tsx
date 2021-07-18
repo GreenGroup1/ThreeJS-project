@@ -1,6 +1,6 @@
 import fileDialog from 'file-dialog'
 import { atoms, auth } from "misc"
-import { BufferAttribute, Float32BufferAttribute } from 'three'
+import { BufferAttribute, BufferGeometry, BufferGeometryUtils, Float32BufferAttribute } from 'three'
 import { STLLoader } from "three-stdlib"
 import { useRecoilState } from 'recoil'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
@@ -22,10 +22,11 @@ import {
   Undo, Redo, Replay, 
   Public as World,  
   AllOut as Local, 
-  ExitToApp,
+  ExitToApp, Edit,
   AccountCircle} from '@material-ui/icons'
 import { CSG } from 'three-csg-ts'
 import { deflate, gzip, deflateRaw } from 'pako'
+import toIndexed from './toIndexed'
 
 const useStyles = makeStyles(()=>({
   button: {
@@ -58,14 +59,16 @@ function Button(props:ButtonProps<'button'>){
   return <ButtonRegular 
     variant="contained" 
     color='secondary'
+    size='small' 
+    {...props}
     style={{ 
+      ...props?.style||{},
       borderRadius: 0,
       margin: '0.5rem', 
       width:'2.5rem', 
       height:'2.5rem', 
       display:'flex', 
-      padding:0}} 
-    size='small' {...props}>
+      padding:0}} >
       {props.children}
   </ButtonRegular>
 }
@@ -84,6 +87,7 @@ export function ButtonPannel() {
   const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
   const [ text, setText ] = useRecoilState(atoms.text)
   const [ user, setUser ] = useRecoilState(atoms.user)
+  const [ deletionMode, setDeletionMode ] = useRecoilState(atoms.deletionMode)
 
   return <div style={{position:'absolute', top:0,bottom:0,overflowY:'scroll', minWidth:'4rem'}}>
       <div style={{
@@ -103,25 +107,28 @@ export function ButtonPannel() {
               const dialog = await fileDialog()
               const buffer = await dialog[0].arrayBuffer()
               const bufferGeometry = new STLLoader().parse(buffer)
-              bufferGeometry.computeVertexNormals()
-              bufferGeometry.computeTangents()
-              bufferGeometry.computeBoundingBox()
-              const count = bufferGeometry.attributes.position.count
-              console.log(count, new Array(count).map((v,i)=>[i/(count+1), (i+1)/(count+1)]).flat())
+              // bufferGeometry.computeVertexNormals()
+              // bufferGeometry.computeTangents()
+              // bufferGeometry.computeBoundingBox()
+              //@ts-ignore
+              BufferGeometry.prototype.toIndexed = toIndexed
+              
+              //@ts-ignore
+              const indexed = bufferGeometry.toIndexed()
+              console.log(indexed)
+              const count = indexed.attributes.position.count
               const array = new Float32Array(count*2)
               new Array(count).map((v,i)=>[i/(count+1), (i+1)/(count+1)]).flat().forEach((v,i)=>{array[i]=v})
 
-              bufferGeometry.setAttribute(
+              indexed.setAttribute(
                 'uv', 
                 new BufferAttribute(
                   array, 
                 2))
               
-              geometryRef.current= bufferGeometry
+              geometryRef.current= indexed
               setModel(dialog[0].name)
               setNeedsUpdate(true)
-              console.log(dialog[0].name)
-              console.log(bufferGeometry)
           }}>
             <Import style={{color:'#23ABD5'}}/>
           </Button>
@@ -153,12 +160,13 @@ export function ButtonPannel() {
           }}>
             <Rotate/>
           </Button>
-{/* 
+          {/* 
           <Button title='Scale' disabled={loading} onClick={()=>{
             setMode('scale')
           }}>
             <Scale style={{color:'#23ABD5'}}/>
-          </Button> */}
+          </Button> 
+          */}
 
           <Button title='Transformation coordinates' disabled={loading} onClick={()=>{
             if(!transformable) setTransformable(true)
@@ -170,6 +178,17 @@ export function ButtonPannel() {
           </Button>
 
           <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
+
+          <Button title={`
+Delete faces by pressing keyboard button D 
+and hovering over geometry with mouse
+            `} disabled={loading} onClick={()=>{
+            if(model && modelRef.current){
+              setDeletionMode(!deletionMode)
+            }
+          }}>
+            <Edit style={{color: deletionMode?'#ffffff':'#23ABD5'}}/>
+          </Button>
 
           <Button title='Solidify' disabled={loading}  onClick={()=>{
             if(model && modelRef.current){
