@@ -108,6 +108,7 @@ export const Model = () => {
             <pointsMaterial {...{ flatShading:true,  size:2, transparent: true, opacity:0 }} />
     </points>
   </TransformControls>
+  <Texts/>
   </>
 }
 
