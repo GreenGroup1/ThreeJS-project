@@ -16,6 +16,8 @@ export const ModelView = () => {
   const { orbit } = useContext(ModelContext)
   const [ cursor, setCursor ] = useRecoilState(atoms.cursor)
   const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
+  const [ deletionMode ] = useRecoilState(atoms.deletionMode)
+
   const raycaster = useRef(new Raycaster())
   const dPress = useKeyPress('d')
   
@@ -43,7 +45,7 @@ export const ModelView = () => {
             gl.outputEncoding = sRGBEncoding
             scene.background = new Color('#373740')
           }}
-          style={{cursor: dPress?'crosshair':''}}
+          style={{cursor: cursor==='wait'?'wait': (deletionMode&&dPress)?'crosshair':''}}
           onPointerMissed={()=>setTransformable(false)}
         >
           <ModelContext.Provider value={value}>

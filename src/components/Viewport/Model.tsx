@@ -1,6 +1,6 @@
 import { atoms, useKeyPress } from "misc"
 import { useEffect, useRef } from "react"
-import { Vector3 as V3, DoubleSide, Event, Plane, FontLoader } from 'three'
+import { Vector3 as V3, DoubleSide, Event, Plane, FontLoader, BufferGeometry, BufferAttribute, Mesh, Material  } from 'three'
 import { useRecoilState } from 'recoil'
 import { OrbitControls } from "three-stdlib"
 import { TransformControls } from "./TransformControls"
@@ -9,11 +9,15 @@ import { ModelContext } from "context"
 import { useFrame, useThree } from "@react-three/fiber"
 import Renner from 'assets/Renner.json'
 
+
 export const Model = () => {
   const [ model ] = useRecoilState(atoms.model)
   const [ mode ] = useRecoilState(atoms.transformMode)
   const [ transformable, setTransformable ] = useRecoilState(atoms.transformable)
   const [ needsUpdate, setNeedsUpdate ] = useRecoilState(atoms.needsUpdate)
+  const [ needsSave, setNeedsSave ] = useRecoilState(atoms.needsSave)
+  const [ , setCursor ] = useRecoilState(atoms.cursor)
+
   const [ coordinate ] = useRecoilState(atoms.transformCoordinate)
   const [ loading ] = useRecoilState(atoms.loading)
   const [ selected, setSelected ] = useRecoilState(atoms.selected)
@@ -23,6 +27,32 @@ export const Model = () => {
   const [ deletionMode ] = useRecoilState(atoms.deletionMode)
   const mapRef = useRef<Uint32Array>()
   const dPress = useKeyPress('d')
+  const [ isSolid ] = useRecoilState(atoms.isSolid)
+  const [ state, setState ] = useRecoilState(atoms.state)
+
+  // useEffect(()=>{
+  //   if(deletionMode && !dPress){
+  //     console.log('update')
+  //     setCursor('wait')
+  //     setNeedsSave(true)
+  //   }
+  // },[dPress, deletionMode, setNeedsSave])
+
+  // useEffect(()=>{
+  //   if(modelRef.current&&(needsSave)){
+  //     console.log('set new state')
+  //     setCursor('wait')
+  //     const copy = JSON.parse(JSON.stringify(modelRef.current)) as Mesh<BufferGeometry, Material | Material[]>
+  //     setState(pstate=>pstate.findIndex(v=>v.current)===pstate.length-1 ?
+  //       [...(state.length<3? state: state.slice(1)).map(v=>({...v, current:false})), {mesh: copy, current:true}]:
+  //       [...(state.slice(0, pstate.findIndex(v=>v.current)+1)).map(v=>({...v, current:false})), {mesh: copy, current:true}]
+  //     )
+  //     setCursor('')
+  //     setNeedsSave(false)
+  //   }
+  // },[needsSave])
+
+  // useEffect(()=>console.log(state),[state])
 
   const flip = (obj:any) => Object.fromEntries(
     Object.entries(obj)
@@ -81,7 +111,6 @@ export const Model = () => {
     showX={transformable&&selected==='model'}
     showY={transformable&&selected==='model'}
     showZ={transformable&&selected==='model'}
-    // visible={selected!=='model'}
     //@ts-ignore
     ref={transform} size={0.6} space={coordinate}>
     <mesh 
@@ -108,7 +137,7 @@ export const Model = () => {
             <pointsMaterial {...{ flatShading:true,  size:2, transparent: true, opacity:0 }} />
     </points>
   </TransformControls>
-  <Texts/>
+  {isSolid && <Texts/>}
   </>
 }
 
@@ -137,9 +166,8 @@ function Texts () {
           setSelected('text')
           setTransformable(true)
         }}>
-            {/* <planeGeometry attach='geometry' args={[100,100]}/> */}
-            <textGeometry attach='geometry' args={[text, {font, size: 9, height: 12}]} />
-            <meshLambertMaterial attach="material" color="#999" side={DoubleSide} transparent={true} opacity={0.2}/>
+            <textGeometry attach='geometry' args={[text, {font, size: 6, height: 6}]} />
+            <meshLambertMaterial attach="material" color="#999" side={DoubleSide}  opacity={0.6}/>
       </mesh>
     </TransformControls>
 </>

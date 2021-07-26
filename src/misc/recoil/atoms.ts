@@ -1,5 +1,6 @@
 import { Maybe, Users } from 'generated'
 import { atom } from 'recoil'
+import { BufferGeometry, Material, Mesh } from 'three'
 import { defaultPosition, ViewportProps } from "../types"
 
 export const model = atom({
@@ -64,7 +65,7 @@ export const selected = atom({
 
 export const text = atom({
   key: 'text',
-  default: 'test'
+  default: ''
 })
 
 export const user = atom({
@@ -81,4 +82,27 @@ export const deletionMode = atom({
 export const keysPressed = atom({
   key: 'keysPressed',
   default: {ctrl:false} as {[key:string]:boolean}
+});
+
+export const popups = atom({
+  key: 'popups',
+  default: null as null|'emboss'|'solidify'
+});
+
+export const isSolid = atom({
+  key: 'isSolid',
+  default: false
+});
+
+export const state = atom({
+  key: 'state',
+  default: [] as {
+    mesh: Mesh<BufferGeometry, Material | Material[]>,
+    current?: boolean
+  }[]
+});
+
+export const needsSave = atom({
+  key: 'needsSave',
+  default: false
 });
