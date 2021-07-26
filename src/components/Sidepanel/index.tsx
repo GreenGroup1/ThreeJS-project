@@ -131,7 +131,7 @@ and hovering over geometry with mouse
             <Edit style={{color: deletionMode?'#ffffff':'#23ABD5'}}/>
           </Button>
 
-          <Button title='Solidify' disabled={loading}  onClick={()=>setPopup('solidify')}>
+          <Button title='Solidify' disabled={loading||isSolid}  onClick={()=>setPopup('solidify')}>
             <Base/>
           </Button>
 

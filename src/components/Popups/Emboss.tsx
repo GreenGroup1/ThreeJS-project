@@ -22,7 +22,7 @@ export function EmbossPopup () {
       <Typography variant="h6" style={{marginTop:'0.25rem'}}>
         {loading?'Loading...':'Please enter emboss text'}
       </Typography>
-      {loading && <>
+      {!loading && <>
         <TextField 
           value={text} 
           onChange={(e)=>setText(e.target.value)} 
