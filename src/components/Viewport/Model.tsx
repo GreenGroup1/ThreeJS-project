@@ -30,29 +30,29 @@ export const Model = () => {
   const [ isSolid ] = useRecoilState(atoms.isSolid)
   const [ state, setState ] = useRecoilState(atoms.state)
 
-  // useEffect(()=>{
-  //   if(deletionMode && !dPress){
-  //     console.log('update')
-  //     setCursor('wait')
-  //     setNeedsSave(true)
-  //   }
-  // },[dPress, deletionMode, setNeedsSave])
+  useEffect(()=>{
+    if(deletionMode && !dPress){
+      console.log('update')
+      setCursor('wait')
+      setNeedsSave(true)
+    }
+  },[dPress, deletionMode, setNeedsSave])
 
-  // useEffect(()=>{
-  //   if(modelRef.current&&(needsSave)){
-  //     console.log('set new state')
-  //     setCursor('wait')
-  //     const copy = JSON.parse(JSON.stringify(modelRef.current)) as Mesh<BufferGeometry, Material | Material[]>
-  //     setState(pstate=>pstate.findIndex(v=>v.current)===pstate.length-1 ?
-  //       [...(state.length<3? state: state.slice(1)).map(v=>({...v, current:false})), {mesh: copy, current:true}]:
-  //       [...(state.slice(0, pstate.findIndex(v=>v.current)+1)).map(v=>({...v, current:false})), {mesh: copy, current:true}]
-  //     )
-  //     setCursor('')
-  //     setNeedsSave(false)
-  //   }
-  // },[needsSave])
+  useEffect(()=>{
+    if(geometryRef?.current?.index?.array &&(needsSave)){
+      console.log('set new state')
+      setCursor('wait')
+      const copy = JSON.parse(JSON.stringify(geometryRef.current.index?.array)) as Uint32Array
+      setState(pstate=>pstate.findIndex(v=>v.current)===pstate.length-1 ?
+        [...(state.length<3? state: state.slice(1)).map(v=>({...v, current:false})), {buffer: copy, current:true}]:
+        [...(state.slice(0, pstate.findIndex(v=>v.current)+1)).map(v=>({...v, current:false})), {buffer: copy, current:true}]
+      )
+      setCursor('')
+      setNeedsSave(false)
+    }
+  },[needsSave])
 
-  // useEffect(()=>console.log(state),[state])
+  useEffect(()=>console.log(state),[state])
 
   const flip = (obj:any) => Object.fromEntries(
     Object.entries(obj)

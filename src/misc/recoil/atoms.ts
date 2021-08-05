@@ -97,7 +97,7 @@ export const isSolid = atom({
 export const state = atom({
   key: 'state',
   default: [] as {
-    mesh: Mesh<BufferGeometry, Material | Material[]>,
+    buffer: Uint32Array,
     current?: boolean
   }[]
 });

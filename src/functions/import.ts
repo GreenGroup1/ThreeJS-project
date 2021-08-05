@@ -9,7 +9,7 @@ type importParams = {
   setModel: (p:string|undefined)=>void
   setNeedsUpdate: (p:boolean)=>void,
   setState?: (p:{
-    mesh: Mesh<BufferGeometry, Material | Material[]>,
+    buffer: Uint32Array,
     current?: boolean
   }[])=>void
 }

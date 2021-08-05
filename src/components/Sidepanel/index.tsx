@@ -142,10 +142,11 @@ and hovering over geometry with mouse
           <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
 
           <Button onClick={()=>{
-            // setTransformable(false)
-            console.log('undo')
-            // modelRef.current = state[state.findIndex(v=>v.current)-1].mesh as unknown as Mesh<BufferGeometry, Material | Material[]>
-            setNeedsUpdate(true)
+            if(geometryRef?.current?.index?.array){
+              console.log('undo')
+              geometryRef.current.index.array = state[state.findIndex(v=>v.current)-1].buffer
+              setNeedsUpdate(true)
+            }
           }} disabled={loading||state.length<2||state.findIndex(v=>v.current)===0} title='Undo' >
             <Undo fontSize="small" style={{color:'#23ABD5'}}/>
           </Button>
