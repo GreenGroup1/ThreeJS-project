@@ -1,6 +1,6 @@
 import { Maybe, Users } from 'generated'
 import { atom } from 'recoil'
-import { BufferGeometry, Material, Mesh } from 'three'
+import { BufferAttribute, BufferGeometry, Material, Mesh } from 'three'
 import { defaultPosition, ViewportProps } from "../types"
 
 export const model = atom({
@@ -97,7 +97,7 @@ export const isSolid = atom({
 export const state = atom({
   key: 'state',
   default: [] as {
-    buffer: Uint32Array,
+    buffer: BufferAttribute,
     current?: boolean
   }[]
 });

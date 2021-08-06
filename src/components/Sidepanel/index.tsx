@@ -144,14 +144,35 @@ and hovering over geometry with mouse
           <Button onClick={()=>{
             if(geometryRef?.current?.index?.array){
               console.log('undo')
-              geometryRef.current.index.array = state[state.findIndex(v=>v.current)-1].buffer
+              geometryRef.current.index.array = new Uint32Array(state[state.findIndex(v=>v.current)-1].buffer.array) 
+              geometryRef.current.index.needsUpdate = true;
+
               setNeedsUpdate(true)
+              const update = [...state]
+              const ind = state.findIndex(v=>v.current)
+              update[ind-1] = {...state[ind-1], current: true}
+              update[ind] = {...state[ind], current: false}
+              setState(update)
             }
           }} disabled={loading||state.length<2||state.findIndex(v=>v.current)===0} title='Undo' >
             <Undo fontSize="small" style={{color:'#23ABD5'}}/>
           </Button>
 
-          <Button onClick={()=>setTransformable(false)} disabled={true} title='Redo' >
+          <Button onClick={()=>{
+            if(geometryRef?.current?.index?.array && state[state.findIndex(v=>v.current)+1].buffer.array){
+
+              geometryRef.current.index.array = new Uint32Array(state[state.findIndex(v=>v.current)+1].buffer.array) 
+              geometryRef.current.index.needsUpdate = true;
+
+              setNeedsUpdate(true)
+              const update = [...state]
+              const ind = state.findIndex(v=>v.current)
+              update[ind+1] = {...state[ind-1], current: true}
+              update[ind] = {...state[ind], current: false}
+              setState(update)
+            }
+            // setTransformable(false)
+          }} disabled={loading||state.length<2||state.findIndex(v=>v.current)===(state.length-1)} title='Redo' >
             <Redo fontSize="small" style={{color:'#23ABD5'}}/>
           </Button>
 
