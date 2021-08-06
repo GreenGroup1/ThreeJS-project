@@ -159,7 +159,7 @@ and hovering over geometry with mouse
           </Button>
 
           <Button onClick={()=>{
-            if(geometryRef?.current?.index?.array && state[state.findIndex(v=>v.current)+1].buffer.array){
+            if(geometryRef?.current?.index?.array && state?.[state.findIndex(v=>v.current)+1]?.buffer?.array){
 
               geometryRef.current.index.array = new Uint32Array(state[state.findIndex(v=>v.current)+1].buffer.array) 
               geometryRef.current.index.needsUpdate = true;
