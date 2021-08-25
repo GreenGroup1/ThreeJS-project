@@ -5,7 +5,9 @@ import { Loader, LogIn } from 'components'
 import { useEffect } from "react"
 import { useApolloClient } from "@apollo/client"
 import { useUserLazyQuery } from "generated"
-import { useHistory } from "react-router-dom"
+import { Redirect, Route, Switch, useHistory } from "react-router-dom"
+import Signup from "components/Popups/Signup"
+import Forgot from "components/Popups/Forgot"
 
 export default function App () {
   const [ loading, setLoading ] = useRecoilState(atoms.loading)
@@ -51,7 +53,23 @@ export default function App () {
           null
         }
       </>:
-      <LogIn/>
+      <>
+        <Switch>
+          <Route path='/' exact>
+            <Redirect to='/login'/>
+          </Route>
+          <Route path='/login'>
+            <LogIn/>
+          </Route>
+          <Route path='/signup'>
+            <Signup/>
+          </Route>
+          <Route path='/forgot-password'>
+            <Forgot/>
+          </Route>
+          <Redirect to='/'/>
+        </Switch>
+      </>
     }
 
   </>
