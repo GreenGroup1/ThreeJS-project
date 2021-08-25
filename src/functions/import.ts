@@ -9,7 +9,7 @@ type importParams = {
   setModel: (p:string|undefined)=>void
   setNeedsUpdate: (p:boolean)=>void,
   setState?: (p:{
-    buffer: Uint32Array,
+    buffer: BufferAttribute,
     current?: boolean
   }[])=>void
 }

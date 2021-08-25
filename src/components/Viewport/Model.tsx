@@ -42,9 +42,9 @@ export const Model = () => {
     if(geometryRef?.current?.index?.array &&(needsSave)){
       console.log('set new state')
       setCursor('wait')
-      const copy = JSON.parse(JSON.stringify(geometryRef.current.index?.array)) as Uint32Array
+      const copy = JSON.parse(JSON.stringify(geometryRef.current.index)) as BufferAttribute
       setState(pstate=>pstate.findIndex(v=>v.current)===pstate.length-1 ?
-        [...(state.length<3? state: state.slice(1)).map(v=>({...v, current:false})), {buffer: copy, current:true}]:
+        [...(state.length<5? state: state.slice(1)).map(v=>({...v, current:false})), {buffer: copy, current:true}]:
         [...(state.slice(0, pstate.findIndex(v=>v.current)+1)).map(v=>({...v, current:false})), {buffer: copy, current:true}]
       )
       setCursor('')
