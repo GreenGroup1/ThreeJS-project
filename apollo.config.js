@@ -3,7 +3,7 @@ require('dotenv').config();
 module.exports = {
   client: {
     service: {
-      name: 'wcty',
+      name: 'dental3d',
       url: 'https://api.dentalmodelmaker.com/hasura/v1/graphql',
       // optional headers
       headers: {
