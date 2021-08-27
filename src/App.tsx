@@ -8,9 +8,10 @@ import { useUserLazyQuery } from "generated"
 import { Redirect, Route, Switch, useHistory } from "react-router-dom"
 import Signup from "components/Popups/Signup"
 import Forgot from "components/Popups/Forgot"
+import { ExportPopup } from "components/Popups/Export"
 
 export default function App () {
-  const [ loading, setLoading ] = useRecoilState(atoms.loading)
+  const [ loading ] = useRecoilState(atoms.loading)
   const [ user, setUser ] = useRecoilState(atoms.user)
   const [ popups ] = useRecoilState(atoms.popups)
 
@@ -50,6 +51,7 @@ export default function App () {
         {
           popups==='emboss'? <EmbossPopup/>:
           popups==='solidify'? <SolidifyPopup/>:
+          popups==='export'? <ExportPopup/>:
           null
         }
       </>:

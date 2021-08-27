@@ -80,36 +80,36 @@ export function ButtonPannel() {
         minHeight:'calc(100% - 0.5rem)'
       }}>
         <div style={{display: 'flex',flexDirection: 'column'}}>
-          <Button title='Import' disabled={loading} onClick={()=>importModel({geometryRef,setTransformable,setModel,setNeedsUpdate,setState})}>
+          <Button title='Import' disabled={!!loading} onClick={()=>importModel({geometryRef,setTransformable,setModel,setNeedsUpdate,setState})}>
             <Import style={{color:'#23ABD5'}}/>
           </Button>
           
-          <Button onClick={()=>exportModel({modelRef,setTransformable})} disabled={loading} title='Export' >
+          <Button onClick={()=>setPopup('export')} disabled={!!loading} title='Export' >
             <Export style={{color:'#23ABD5'}}/>
           </Button>
 
           <Divider style={{backgroundColor:'rgba(0,0,0,0.8)'}}/>
 
-          <Button title='Translate' disabled={loading} onClick={()=>{
+          <Button title='Translate' disabled={!!loading} onClick={()=>{
             setMode('translate')
           }}>
             <Arrows fontSize='small' style={{color:'#23ABD5', transform:'rotate(45deg)'}}/>
           </Button>
 
-          <Button title='Rotate' disabled={loading}  onClick={()=>{
+          <Button title='Rotate' disabled={!!loading}  onClick={()=>{
             setMode('rotate')
           }}>
             <Rotate/>
           </Button>
           
-          <Button title='Scale' disabled={loading||selected==='model'} onClick={()=>{
+          <Button title='Scale' disabled={(!!loading)||selected==='model'} onClick={()=>{
             setMode('scale')
           }}>
             <Scale style={{color:'#23ABD5'}}/>
           </Button> 
          
 
-          <Button title='Transformation coordinates' disabled={loading} onClick={()=>{
+          <Button title='Transformation coordinates' disabled={!!loading} onClick={()=>{
             if(!transformable) setTransformable(true)
             setCoordinate(prev=>prev==='world'?'local':'world')
           }}>
@@ -127,15 +127,15 @@ and hovering over geometry with mouse
             if(model && modelRef.current){
               setDeletionMode(!deletionMode)
             }
-          }} disabled={loading||isSolid}>
+          }} disabled={(!!loading)||isSolid}>
             <Edit style={{color: deletionMode?'#ffffff':'#23ABD5'}}/>
           </Button>
 
-          <Button title='Solidify' disabled={loading||isSolid}  onClick={()=>setPopup('solidify')}>
+          <Button title='Solidify' disabled={(!!loading)||isSolid}  onClick={()=>setPopup('solidify')}>
             <Base/>
           </Button>
 
-          <Button onClick={()=>setPopup('emboss')} disabled={loading||!isSolid} title='Emboss'  >
+          <Button onClick={()=>setPopup('emboss')} disabled={(!!loading)||!isSolid} title='Emboss'  >
             <Emboss fontSize="small" style={{color:'#23ABD5'}}/>
           </Button>
 
@@ -154,7 +154,7 @@ and hovering over geometry with mouse
               update[ind] = {...state[ind], current: false}
               setState(update)
             }
-          }} disabled={loading||state.length<2||state.findIndex(v=>v.current)===0} title='Undo' >
+          }} disabled={(!!loading)||state.length<2||state.findIndex(v=>v.current)===0} title='Undo' >
             <Undo fontSize="small" style={{color:'#23ABD5'}}/>
           </Button>
 
@@ -172,7 +172,7 @@ and hovering over geometry with mouse
               setState(update)
             }
             // setTransformable(false)
-          }} disabled={loading||state.length<2||state.findIndex(v=>v.current)===(state.length-1)} title='Redo' >
+          }} disabled={(!!loading)||state.length<2||state.findIndex(v=>v.current)===(state.length-1)} title='Redo' >
             <Redo fontSize="small" style={{color:'#23ABD5'}}/>
           </Button>
 
@@ -183,7 +183,7 @@ and hovering over geometry with mouse
             textRef.current=undefined
             setSolid(false)
             setNeedsUpdate(true)
-            setLoading(false)
+            setLoading(null)
           }} title='Start over' >
             <Replay fontSize="small" style={{color:'#23ABD5'}}/>
           </Button>

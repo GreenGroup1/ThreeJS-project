@@ -3,6 +3,7 @@ import { gzip } from 'pako'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
 import { v4 as uuid} from 'uuid'
 import { STLLoader, TransformControls } from "three-stdlib"
+import { devBlender, prodBlender } from 'misc'
 
 type embossParams = {
   modelRef: React.MutableRefObject<Mesh<BufferGeometry, Material | Material[]> | undefined>
@@ -10,7 +11,7 @@ type embossParams = {
   textRef: React.MutableRefObject<Mesh<BufferGeometry, Material | Material[]> | undefined>
   transform: React.MutableRefObject<TransformControls<Camera> | null>
   setTransformable: (p:boolean)=>void
-  setLoading: (p:boolean)=>void
+  setLoading: (p:null|Date|false)=>void
   setNeedsUpdate: (p:boolean)=>void,
   setPopups: (p:'emboss'|'solidify'|null)=>void
   setText: (p:string)=>void
@@ -31,7 +32,7 @@ export function emboss ({
   if(modelRef.current && textRef.current){
     console.log(modelRef.current,textRef.current)
     setTransformable(false)
-    setLoading(true)
+    setLoading(new Date())
     const exporter = new STLExporter()
     const stlFormatted = exporter.parse(modelRef.current, {binary:true}) as unknown as DataView
     const uint8View = new Uint8Array(stlFormatted.buffer);
@@ -49,7 +50,7 @@ export function emboss ({
     formData.append('file', file, `${uuid()}.stl`)
     formData.append('text', fileText, `${uuid()}.stl`)
 
-    fetch(origin==='http://localhost:3000'?'http://127.0.0.1:5005/emboss/':'https://edit.dentalmodelmaker.com/emboss/', { 
+    fetch(origin==='http://localhost:3000'? `${devBlender}/emboss/`: `${prodBlender}/emboss/`, { 
       method: 'POST',
       body: formData,
       headers: {
@@ -71,14 +72,14 @@ export function emboss ({
           setNeedsUpdate(true)
           modelRef.current.updateMatrix()
           setLoading(false)
-          setPopups(null)
+          //setPopups(null)
           setText('')
         }
       }
     ).catch(
       error => {
         console.log(error)
-        setLoading(false)
+        setLoading(null)
         setPopups(null)
       }
     );

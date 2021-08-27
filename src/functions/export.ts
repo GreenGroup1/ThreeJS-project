@@ -5,12 +5,14 @@ import { download } from './download'
 
 type exportParams = {
   modelRef: React.MutableRefObject<Mesh<BufferGeometry, Material | Material[]> | undefined>
-  setTransformable: (p:boolean)=>void
+  setTransformable: (p:boolean)=>void,
+  name: string
 }
 
 export async function exportModel ({
   modelRef,
   setTransformable,
+  name
 }:exportParams){
   if(modelRef.current){
     setTransformable(false)
@@ -19,6 +21,6 @@ export async function exportModel ({
     console.log(stlFormatted, origin)
     const file = new File([stlFormatted],`${uuid()}.stl`, {type: "model/stl"})    
     console.log(new Date().toJSON().slice(0,10))
-    download(file,`model.stl`)
+    download(file,`${name}.stl`)
   }
 }

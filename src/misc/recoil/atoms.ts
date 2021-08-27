@@ -50,7 +50,7 @@ export const transformCoordinate = atom({
 
 export const loading = atom({
   key: 'loading',
-  default: false
+  default: null as null|Date|false
 })
 
 export const cursor = atom({
@@ -86,7 +86,7 @@ export const keysPressed = atom({
 
 export const popups = atom({
   key: 'popups',
-  default: null as null|'emboss'|'solidify'
+  default: null as null|'emboss'|'solidify'|'export'
 });
 
 export const isSolid = atom({

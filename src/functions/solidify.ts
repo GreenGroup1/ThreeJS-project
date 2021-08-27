@@ -3,6 +3,7 @@ import { gzip } from 'pako'
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter'
 import { v4 as uuid} from 'uuid'
 import { STLLoader, TransformControls } from "three-stdlib"
+import { devBlender, prodBlender } from 'misc'
 
 type solidifyParams = {
   model: string|undefined
@@ -10,7 +11,7 @@ type solidifyParams = {
   geometryRef: React.MutableRefObject<BufferGeometry | undefined>
   transform: React.MutableRefObject<TransformControls<Camera> | null>
   setTransformable: (p:boolean)=>void
-  setLoading: (p:boolean)=>void
+  setLoading: (p:null|Date|false)=>void
   setNeedsUpdate: (p:boolean)=>void
   setSolid: (p:boolean)=>void
   setPopups: (p:'emboss'|'solidify'|null)=>void
@@ -29,7 +30,7 @@ export function solidify ({
 }:solidifyParams){
   if(model && modelRef.current){
     setTransformable(false)
-    setLoading(true)
+    setLoading(new Date())
     const exporter = new STLExporter()
     const stlFormatted = exporter.parse(modelRef.current, {binary:true}) as unknown as DataView
     const uint8View = new Uint8Array(stlFormatted.buffer);
@@ -39,12 +40,14 @@ export function solidify ({
     const file = new File([compressedFile],`${uuid()}.stl`, {type: "model/stl"})   
     const formData  = new FormData()     
     formData.append('file', file, `${uuid()}.stl`)
-    fetch(origin==='http://localhost:3000'?'http://127.0.0.1:5005?align=1':'https://edit.dentalmodelmaker.com?align=1', { 
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Encoding': 'gzip'
-      }
+    fetch(origin==='http://localhost:3000'?
+      `${devBlender}?align=1`:
+      `${prodBlender}?align=1`, { 
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Encoding': 'gzip'
+        }
     }).then(
       response => response.arrayBuffer()
     ).then(
@@ -62,13 +65,13 @@ export function solidify ({
           modelRef.current.updateMatrix()
           setLoading(false)
           setSolid(true)
-          setPopups(null)
+          //setPopups(null)
         }
       }
     ).catch(
       error => {
         console.log(error)
-        setLoading(false)
+        setLoading(null)
         setPopups(null)
       }
     );

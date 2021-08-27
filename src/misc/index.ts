@@ -32,3 +32,8 @@ export function useKeyPress(targetKey:string) {
   }, []); // Empty array ensures that effect is only run on mount and unmount
   return keyPressed;
 }
+
+export const devBlender = 'https://edit.dentalmodelmaker.com' //'http://127.0.0.1:5005'
+export const prodBlender = 'https://edit.dentalmodelmaker.com'
+// export const devAPI = 'https://api.dentalmodelmaker.com/dev6'
+// export const prodAPI = 'https://api.dentalmodelmaker.com/v1'
