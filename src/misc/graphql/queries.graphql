@@ -6,3 +6,12 @@ query User ($user_id: uuid!) {
     display_name
   }
 }
+
+mutation ChangeUser ($user_id: uuid!, $full_name: String) {
+  update_users_by_pk(
+    pk_columns: {id: $user_id},
+    _set: {display_name: $full_name}
+  ){
+    display_name
+  }
+}

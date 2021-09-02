@@ -4,16 +4,20 @@ import { Visibility, VisibilityOff } from  '@material-ui/icons'
 import { useEffect, useState } from "react"
 import { Person } from '@material-ui/icons'
 import { useHistory } from 'react-router-dom'
+import { useChangeUserMutation } from 'generated'
+import fileDialog from 'file-dialog'
+import { storage } from 'misc' 
 
 export default function Signup(){
   const [credentials, setCredentials] = useState({name:'', email:'', password:'',  cpassword:''})
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [cpasswordVisible, setCpasswordVisible] = useState(false)
   const [error, setError] = useState<any>()
+  const [changeUser] = useChangeUserMutation()
   const  history = useHistory()
 
   useEffect(()=>{error&&console.log(error)},[error])
-
+  
   return (
     <div style={{ color:'black', position:'absolute', top:0, bottom:0, left:0, right:0, backgroundColor:'#373740', display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ backgroundColor:'white', width: 420, borderRadius:'0.2rem', boxShadow:'-2px 2px 2px rgba(0,0,0,0.2)', boxSizing:'border-box' }}>
@@ -89,6 +93,7 @@ export default function Signup(){
             id="cpassword" 
             label="Confirm Password" 
             variant="filled" 
+            error={credentials.cpassword!==credentials.password}
             type={cpasswordVisible?"text":"password" }
             style={{width: '100%', marginTop: '1rem', border:'none'}} 
             InputProps={{
@@ -111,7 +116,14 @@ export default function Signup(){
           <Typography variant="subtitle2" style={{marginTop:'1rem', marginBottom:'.5rem'}}>
             Profile Image
           </Typography>
-          <div style={{height:'6rem',cursor:'pointer', width:'100%', boxSizing:'border-box', backgroundColor:'#dcdcdc', padding:' 1rem', borderRadius:'0.2rem', display:'flex'}}>
+          <div onClick={async ()=>{
+                const dialog = await fileDialog()
+                storage.put('/avatars/' + dialog[0].name, dialog[0])
+                  .then(data=>{
+                    console.log(data)
+                  })
+          }}
+            style={{height:'6rem',cursor:'pointer', width:'100%', boxSizing:'border-box', backgroundColor:'#dcdcdc', padding:' 1rem', borderRadius:'0.2rem', display:'flex'}}>
             <div style={{backgroundColor:'#bbb', flex:'0 0 4rem', marginRight:'1rem', width: '4rem', height:'4rem',  display: 'flex',  justifyContent:'center',  alignItems:'center', borderRadius: '0.2rem'}}>
               <Person fontSize='large' style={{width:'3rem',  color:'grey', height:'3rem'}}/>
             </div>
@@ -123,7 +135,11 @@ export default function Signup(){
           </div>
           <div style={{width:'100%'}}>
             <Button 
-              onClick={()=>auth.register(credentials).catch((err)=>setError(err))} 
+              disabled={credentials.cpassword!==credentials.password}
+              onClick={()=>auth.register(credentials)
+                .then((data:any)=>{
+                  changeUser({ variables:{ user_id: data.user.id, full_name: credentials.name }} )
+                }).catch((err)=>setError(err))} 
               style={{width:'100%', height:'3.2rem', marginTop:'1rem', color:'white', backgroundColor: '#23abd5'}}>
               Register
             </Button>

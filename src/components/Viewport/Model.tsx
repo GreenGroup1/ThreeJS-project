@@ -112,7 +112,7 @@ export const Model = () => {
     showY={transformable&&selected==='model'}
     showZ={transformable&&selected==='model'}
     //@ts-ignore
-    ref={transform} size={0.6} space={coordinate}>
+    ref={transform} size={1} space={coordinate}>
     <mesh 
       ref={modelRef} 
       onClick={()=>{
@@ -158,7 +158,7 @@ function Texts () {
       rotation={[0,0,0]} 
       // visible={selected!=='text'}
       //@ts-ignore
-      ref={textTransform} size={0.6} space={coordinate}>
+      ref={textTransform} size={1} space={coordinate}>
       <mesh 
         ref={textRef}  
         onClick={()=>{

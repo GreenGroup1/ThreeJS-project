@@ -51,6 +51,28 @@ export type String_Comparison_Exp = {
   _similar?: Maybe<Scalars['String']>;
 };
 
+/** mutation root */
+export type Mutation_Root = {
+  /** update data of the table: "users" */
+  update_users?: Maybe<Users_Mutation_Response>;
+  /** update single row of the table: "users" */
+  update_users_by_pk?: Maybe<Users>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_UsersArgs = {
+  _set?: Maybe<Users_Set_Input>;
+  where: Users_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Users_By_PkArgs = {
+  _set?: Maybe<Users_Set_Input>;
+  pk_columns: Users_Pk_Columns_Input;
+};
+
 /** column ordering options */
 export enum Order_By {
   /** in ascending order, nulls last */
@@ -204,6 +226,14 @@ export type Users_Min_Fields = {
   updated_at?: Maybe<Scalars['timestamptz']>;
 };
 
+/** response of any mutation on the table "users" */
+export type Users_Mutation_Response = {
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Users>;
+};
+
 /** Ordering options when selecting data from "users". */
 export type Users_Order_By = {
   avatar_url?: Maybe<Order_By>;
@@ -211,6 +241,11 @@ export type Users_Order_By = {
   display_name?: Maybe<Order_By>;
   id?: Maybe<Order_By>;
   updated_at?: Maybe<Order_By>;
+};
+
+/** primary key columns input for table: users */
+export type Users_Pk_Columns_Input = {
+  id: Scalars['uuid'];
 };
 
 /** select columns of table "users" */
@@ -226,6 +261,15 @@ export enum Users_Select_Column {
   /** column name */
   UpdatedAt = 'updated_at'
 }
+
+/** input type for updating data in table "users" */
+export type Users_Set_Input = {
+  avatar_url?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['timestamptz']>;
+  display_name?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['uuid']>;
+  updated_at?: Maybe<Scalars['timestamptz']>;
+};
 
 
 /** Boolean expression to compare columns of type "uuid". All fields are combined with logical 'AND'. */
@@ -247,6 +291,14 @@ export type UserQueryVariables = Exact<{
 
 
 export type UserQuery = { users_by_pk?: Maybe<Pick<Users, 'id' | 'avatar_url' | 'created_at' | 'display_name'>> };
+
+export type ChangeUserMutationVariables = Exact<{
+  user_id: Scalars['uuid'];
+  full_name?: Maybe<Scalars['String']>;
+}>;
+
+
+export type ChangeUserMutation = { update_users_by_pk?: Maybe<Pick<Users, 'display_name'>> };
 
 
 export const UserDocument = gql`
@@ -287,6 +339,45 @@ export function useUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UserQ
 export type UserQueryHookResult = ReturnType<typeof useUserQuery>;
 export type UserLazyQueryHookResult = ReturnType<typeof useUserLazyQuery>;
 export type UserQueryResult = Apollo.QueryResult<UserQuery, UserQueryVariables>;
+export const ChangeUserDocument = gql`
+    mutation ChangeUser($user_id: uuid!, $full_name: String) {
+  update_users_by_pk(pk_columns: {id: $user_id}, _set: {display_name: $full_name}) {
+    display_name
+  }
+}
+    `;
+export type ChangeUserMutationFn = Apollo.MutationFunction<ChangeUserMutation, ChangeUserMutationVariables>;
+
+/**
+ * __useChangeUserMutation__
+ *
+ * To run a mutation, you first call `useChangeUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useChangeUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [changeUserMutation, { data, loading, error }] = useChangeUserMutation({
+ *   variables: {
+ *      user_id: // value for 'user_id'
+ *      full_name: // value for 'full_name'
+ *   },
+ * });
+ */
+export function useChangeUserMutation(baseOptions?: Apollo.MutationHookOptions<ChangeUserMutation, ChangeUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ChangeUserMutation, ChangeUserMutationVariables>(ChangeUserDocument, options);
+      }
+export type ChangeUserMutationHookResult = ReturnType<typeof useChangeUserMutation>;
+export type ChangeUserMutationResult = Apollo.MutationResult<ChangeUserMutation>;
+export type ChangeUserMutationOptions = Apollo.BaseMutationOptions<ChangeUserMutation, ChangeUserMutationVariables>;
+export type mutation_rootKeySpecifier = ('update_users' | 'update_users_by_pk' | mutation_rootKeySpecifier)[];
+export type mutation_rootFieldPolicy = {
+	update_users?: FieldPolicy<any> | FieldReadFunction<any>,
+	update_users_by_pk?: FieldPolicy<any> | FieldReadFunction<any>
+};
 export type query_rootKeySpecifier = ('users' | 'users_aggregate' | 'users_by_pk' | query_rootKeySpecifier)[];
 export type query_rootFieldPolicy = {
 	users?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -334,7 +425,16 @@ export type users_min_fieldsFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	updated_at?: FieldPolicy<any> | FieldReadFunction<any>
 };
+export type users_mutation_responseKeySpecifier = ('affected_rows' | 'returning' | users_mutation_responseKeySpecifier)[];
+export type users_mutation_responseFieldPolicy = {
+	affected_rows?: FieldPolicy<any> | FieldReadFunction<any>,
+	returning?: FieldPolicy<any> | FieldReadFunction<any>
+};
 export type TypedTypePolicies = TypePolicies & {
+	mutation_root?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | mutation_rootKeySpecifier | (() => undefined | mutation_rootKeySpecifier),
+		fields?: mutation_rootFieldPolicy,
+	},
 	query_root?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | query_rootKeySpecifier | (() => undefined | query_rootKeySpecifier),
 		fields?: query_rootFieldPolicy,
@@ -362,6 +462,10 @@ export type TypedTypePolicies = TypePolicies & {
 	users_min_fields?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | users_min_fieldsKeySpecifier | (() => undefined | users_min_fieldsKeySpecifier),
 		fields?: users_min_fieldsFieldPolicy,
+	},
+	users_mutation_response?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | users_mutation_responseKeySpecifier | (() => undefined | users_mutation_responseKeySpecifier),
+		fields?: users_mutation_responseFieldPolicy,
 	}
 };
 

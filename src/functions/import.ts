@@ -19,7 +19,7 @@ export async function importModel ({
   setTransformable,
   setModel,
   setNeedsUpdate,
-}:importParams){
+}:importParams ){
     setTransformable(false)
     const dialog = await fileDialog()
     const buffer = await dialog[0].arrayBuffer()
